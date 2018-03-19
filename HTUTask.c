@@ -59,7 +59,7 @@ char Output[40];
 
 void DataGetI2CFxn(UArg arg0, UArg arg1)
 {
-    /*von Daniel und Raphael*/
+
     float temp;
     float rh;
     float taupunkt;
