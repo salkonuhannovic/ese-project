@@ -1,0 +1,65 @@
+﻿@model ESE.SmartHome.App.Dashboard.ViewDashboard.QueryResult
+@inject IJsonHelper MyJson;
+
+@{
+    ViewBag.Title = "Dashboard";
+    Layout = "_Layout";
+}
+
+<h2 class="text-danger"><i class="fa fa-thermometer"></i> | Dashboard</h2>
+
+<canvas id="myChart" width="60" height="30"></canvas>
+
+
+@section Scripts
+    {
+    <script>
+
+        var model = null;
+
+        @if (Model.Device != null)
+        {
+            var model = Html.Raw(MyJson.Serialize(Model.Device.Measurements));
+        }
+
+
+            var xPoints = [];
+            var yPoints = [];
+
+            $.each(model,
+                function(index, item) {
+                    xPoints.push(new Date(item.receptionDateTime));
+                    yPoints.push(new Date(item.temperature));
+                });
+
+            var config = {
+                type: 'line',
+                data: {
+                    labels: xPoints,
+                    datasets: [
+                        {
+                            label: "Temperature",
+                            data: yPoints
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        xAxes: [
+                            {
+                                type: 'time',
+                                time: {
+                                    displayFormats: {
+                                        'hour': 'HH:mm:ss'
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            };
+
+            var ctx = document.getElementById("myChart").getContext("2d");
+            new Chart(ctx, config);
+    </script>
+}

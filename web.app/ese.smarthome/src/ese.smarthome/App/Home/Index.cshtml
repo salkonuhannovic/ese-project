@@ -1,0 +1,53 @@
+﻿@using ESE.SmartHome.App.Home
+@model dynamic
+
+@{
+    ViewBag.Title = "Smart Home";
+    Layout = "_Layout";
+}
+
+@section styles
+{
+    <style>
+        .card > a {
+            position: absolute;
+            top: 0; left: 0;
+            height: 100%; width: 100%;
+        }
+    </style>
+}
+
+<h2>My Home is my castle ...</h2>
+
+<div class="row">
+    <div class="col-sm-3">
+        <div class="card bg-dark text-white">
+            <a asp-controller="Dashboard" asp-action="ViewDashboard"></a>
+            <div class="card-header"><i class="fa fa-calendar"> | Historie</i></div>
+            <div class="card-body">
+                @*<h5 class="card-title">Historische Daten</h5>*@
+                <p class="card-text">Periodische Messdaten ansehen.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="card bg-dark text-white">
+            <a asp-controller="RealtimeChart" asp-action="Index"></a>
+            <div class="card-header"><i class="fa fa-area-chart"> | Echtzeitdaten</i></div>
+            <div class="card-body">
+                @*<h5 class="card-title">Daten in Echtzeit</h5>*@
+                <p class="card-text">Eingehende Messdaten in Echtzeit ansehen.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="card bg-dark text-white">
+            <a asp-controller="Home" asp-action="Index"></a>
+            <div class="card-header"><i class="fa fa-gears"> | Einstellungen</i></div>
+            <div class="card-body">
+                @*<h5 class="card-title">Sensoren einstellen</h5>*@
+                <p class="card-text">Einstellungen für Sensoren treffen.</p>
+            </div>
+        </div>
+    </div>
+</div>
