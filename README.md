@@ -16,8 +16,6 @@ The smarthome assistent consists of three packages(folders within this project):
 - tivia-c: code of the µC
 - frontend&backend: code of frontend and backend
 
-woezrqwiuhfsdaihfisuofhqeiuhfiuqwehfuiweqfds
-
 
 ### Tech
 Der-Wetterstation uses a number of open source projects to work properly:
