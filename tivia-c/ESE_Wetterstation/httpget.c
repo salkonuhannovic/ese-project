@@ -51,6 +51,7 @@
 #include "Board.h"
 
 #include <sys/socket.h>
+#include <driverlib/flash.h>
 
 //MOCK
 /*
@@ -59,16 +60,19 @@
 */
 //GET
 #define HOSTNAME          "esesmarthome.azurewebsites.net"
-#define REQUEST_URI       "/setup/00:23"
+#define CONFIG_URI       "/setup/00:23"
 //POST
 /*
 #define HOSTNAME          "esesmarthome.azurewebsites.net"
-#define REQUEST_URI       "/api/measurements"
 */
+#define REQUEST_URI       "/api/measurements"
+
 #define USER_AGENT        "HTTPCli (ARM; TI-RTOS)"
 #define CONTENT_TYPE      "application/json"
 #define HTTPTASKSTACKSIZE 4096
 
+
+static volatile uint8_t device_mac[6];
 /*
  *  ======== printError ========
  */
@@ -88,15 +92,8 @@ Void HTTPPOSTTask(UArg arg0, UArg arg1)
     char CONTENT_LENGTH[3];
     struct sockaddr_in addr;
 
-
-
     //Data to be sent
-    //strcpy(data, "{\"val\": 10}");
-
     strcpy(data, "{\"deviceId\": 1,\"timestamp\": \"2018-06-24T19:12:36.595Z\",\"temperature\": 25,\"humidity\": 45.6}");
-
-
-
 
     len = strlen(data);
     sprintf(CONTENT_LENGTH, "%d", len);
@@ -129,7 +126,7 @@ Void HTTPPOSTTask(UArg arg0, UArg arg1)
         printError("httpTask: connect failed", ret);
     }
 
-//************************************************************************************************************
+//************************************************************************************************************SEND
     ret = HTTPCli_sendRequest(&cli, HTTPStd_POST, REQUEST_URI, true);
     if (ret < 0) {
         printError("httpTask: send failed", ret);
@@ -155,7 +152,7 @@ Void HTTPPOSTTask(UArg arg0, UArg arg1)
     else {
         System_printf("Data sent successfully\n");
     }
-//*******************************************************************************************************************************
+//*************************************************************************************************************RECEIVE
 
     ret = HTTPCli_getResponseStatus(&cli);
     if (ret != HTTPStd_OK) {
@@ -225,7 +222,7 @@ Void httpTask(UArg arg0, UArg arg1)
         printError("httpTask: connect failed", ret);
     }
 
-    ret = HTTPCli_sendRequest(&cli, HTTPStd_GET, REQUEST_URI, false);
+    ret = HTTPCli_sendRequest(&cli, HTTPStd_GET, CONFIG_URI, false);
     if (ret < 0) {
         printError("httpTask: send failed", ret);
     }
@@ -258,80 +255,48 @@ Void httpTask(UArg arg0, UArg arg1)
     HTTPCli_disconnect(&cli);
     HTTPCli_destruct(&cli);
 }
-/*
- *  ======== httpTask ========
- *  Makes a HTTP POST request
-Void httpPostTask(UArg arg0, UArg arg1)
+
+getMacAddress()
 {
-    bool moreFlag = false;
-    char data[64];
-    int ret;
-    int len;
-    struct sockaddr_in addr;
-    HTTPCli_Struct cli;
-    HTTPCli_Field fields[2] = {
-        { HTTPStd_FIELD_NAME_HOST,  "www.example.com" },
-        { NULL, NULL }
-    };
-    // Response field filters
-    char respFields[2] = {
-        HTTPStd_FIELD_NAME_CONTENT_LENGTH,
-        NULL
-    };
-    System_printf("Sending a HTTP POST request to '%s'\n", HOSTNAME);//POST
-    System_flush();
-    HTTPCli_construct(&cli);
-    HTTPCli_setRequestFields(&cli, fields);
-    HTTPCli_setResponseFields(&cli, respFields);
-    ret = HTTPCli_initSockAddr((struct sockaddr *)&addr, HOSTNAME, 0);
-    if (ret < 0) {
-        printError("httpTask: address resolution failed", ret);
-    }
-    ret = HTTPCli_connect(&cli, (struct sockaddr *)&addr, 0, NULL);
-    if (ret < 0) {
-        printError("httpTask: connect failed", ret);
-    }
-    ret = HTTPCli_sendRequest(&cli, HTTPStd_POST, "/index.html", true);
-    //ret = HTTPCli_sendRequest(&cli, HTTPStd_POST, REQUEST_URI, false);
-    if (ret < 0) {
-        printError("httpTask: send failed", ret);
-    }
-    //Sending additional Fields
-    ret = HTTPCli_sendField(&cli, HTTPStd_FIELD_NAME_CONTENT_LENGTH, len, true);
-    if(ret != 0){
-        printError("httpTask: sendField failed", ret);
-    }
-    //Sending Body
-    ret = HTTPCli_sendRequestBody(&cli, data, strlen(data));
-    if(ret != 0){
-            printError("httpTask: sendRequestBody failed", ret);
-        }
-    // Get the processed response status
-    // HTTP/1.1 200 OK
-    ret = HTTPCli_getResponseStatus(&cli);
-    if (ret != HTTPStd_OK) {
-        printError("httpTask: cannot get status", ret);
-    }
-    System_printf("HTTP Response Status Code: %d\n", ret);
-    //TODO: More Handling hast to be done for response care here
-    ret = HTTPCli_getResponseField(&cli, data, sizeof(data), &moreFlag);
-    if (ret != HTTPCli_FIELD_ID_END) {
-        printError("httpTask: response field processing failed", ret);
-    }
-    len = 0;
-    do {
-        ret = HTTPCli_readResponseBody(&cli, data, sizeof(data), &moreFlag);
-        if (ret < 0) {
-            printError("httpTask: response body processing failed", ret);
-        }
-        len += ret;
-    } while (moreFlag);
-    System_printf("Recieved %d bytes of payload\n", len);
-    System_flush();
-    HTTPCli_disconnect(&cli);
-    HTTPCli_destruct(&cli);
+    uint32_t ui32User0, ui32User1;
+    uint8_t pui8MACAddr[6];
+    uint8_t count = 0;
+
+      //
+      // Get the MAC address from the UART0 and UART1 registers in NV ram.
+      //
+      FlashUserGet(&ui32User0, &ui32User1);
+
+      if((ui32User0 == 0xffffffff) || (ui32User1 == 0xffffffff))
+          {
+          //
+          // We should never get here. This is an error if the MAC address has
+          // not been programmed into the device. Exit the program.
+          //
+              while(1)
+              {
+              }
+          }
+
+      //
+      // Convert the 24/24 split MAC address from NV ram into a MAC address
+      // array.
+      //
+      pui8MACAddr[0] = ui32User0 & 0xff;
+      pui8MACAddr[1] = (ui32User0 >> 8) & 0xff;
+      pui8MACAddr[2] = (ui32User0 >> 16) & 0xff;
+      pui8MACAddr[3] = ui32User1 & 0xff;
+      pui8MACAddr[4] = (ui32User1 >> 8) & 0xff;
+      pui8MACAddr[5] = (ui32User1 >> 16) & 0xff;
+
+      System_printf("MAC: %02x-%02x-%02x-%02x-%02x-%02x\n", pui8MACAddr[0], pui8MACAddr[1], pui8MACAddr[2], pui8MACAddr[3], pui8MACAddr[4], pui8MACAddr[5]);
+      System_flush();
+
+      for(count =0; count<6;count++){
+          device_mac[count] = pui8MACAddr[count];
+      }
+
 }
-*/
 
 /*
  *  ======== netIPAddrHook ========
@@ -343,6 +308,9 @@ void netIPAddrHook(unsigned int IPAddr, unsigned int IfIdx, unsigned int fAdd)
     Task_Params taskParams;
     Error_Block eb;
 
+
+    getMacAddress();
+
     /* Create a HTTP task when the IP address is added */
     if (fAdd && !taskHandle) {
         Error_init(&eb);
@@ -351,8 +319,8 @@ void netIPAddrHook(unsigned int IPAddr, unsigned int IfIdx, unsigned int fAdd)
         taskParams.stackSize = HTTPTASKSTACKSIZE;
         taskParams.priority = 1;
         //TODO: Add Posttask here
-        taskHandle = Task_create((Task_FuncPtr)httpTask, &taskParams, &eb);
-        //taskHandle = Task_create((Task_FuncPtr)HTTPPOSTTask, &taskParams, &eb);
+        //taskHandle = Task_create((Task_FuncPtr)httpTask, &taskParams, &eb);
+        taskHandle = Task_create((Task_FuncPtr)HTTPPOSTTask, &taskParams, &eb);
 
         if (taskHandle == NULL) {
             printError("netIPAddrHook: Failed to create HTTP Task\n", -1);
@@ -383,3 +351,9 @@ int main(void)
 
     return (0);
 }
+//*****************************************************************************
+//
+// Prints the current MAC address to the UART.
+//
+//*****************************************************************************
+
