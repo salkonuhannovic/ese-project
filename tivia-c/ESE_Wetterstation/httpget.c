@@ -63,8 +63,8 @@
 #define REQUEST_URI       "/"
 */
 
-#define HOSTNAME          "webhook.site"
-#define REQUEST_URI       "/47567acc-32ec-4bf4-abd6-c03b7d5e5cef"
+#define HOSTNAME          "esesmarthome.azurewebsites.net"
+#define REQUEST_URI       "/api/measurements"
 
 #define USER_AGENT        "HTTPCli (ARM; TI-RTOS)"
 #define CONTENT_TYPE      "application/json"
@@ -75,6 +75,7 @@
  */
 void printError(char *errString, int code)
 {
+
     System_printf("Error! code = %d, desc = %s\n", code, errString);
     BIOS_exit(code);
 }
@@ -82,15 +83,21 @@ void printError(char *errString, int code)
 Void HTTPPOSTTask(UArg arg0, UArg arg1)
 {
     bool moreFlag = false;
-    char data[64];
+    char data[128];
     int ret;
     int len;
     char CONTENT_LENGTH[3];
     struct sockaddr_in addr;
 
 
+
     //Data to be sent
-    strcpy(data, "{\"val\": 10}");
+    //strcpy(data, "{\"val\": 10}");
+
+    strcpy(data, "{\"deviceId\": 1,\"timestamp\": \"2018-06-24T19:12:36.595Z\",\"temperature\": 25,\"humidity\": 45.6}");
+
+
+
 
     len = strlen(data);
     sprintf(CONTENT_LENGTH, "%d", len);
@@ -153,9 +160,11 @@ Void HTTPPOSTTask(UArg arg0, UArg arg1)
 
     ret = HTTPCli_getResponseStatus(&cli);
     if (ret != HTTPStd_OK) {
+        if(ret != 204){
         printError("httpTask: cannot get status", ret);
-    }
 
+        }
+    }
     System_printf("HTTP Response Status Code: %d\n", ret);
 
     ret = HTTPCli_getResponseField(&cli, data, sizeof(data), &moreFlag);
@@ -253,7 +262,6 @@ Void httpTask(UArg arg0, UArg arg1)
 /*
  *  ======== httpTask ========
  *  Makes a HTTP POST request
-
 Void httpPostTask(UArg arg0, UArg arg1)
 {
     bool moreFlag = false;
@@ -261,40 +269,30 @@ Void httpPostTask(UArg arg0, UArg arg1)
     int ret;
     int len;
     struct sockaddr_in addr;
-
     HTTPCli_Struct cli;
     HTTPCli_Field fields[2] = {
         { HTTPStd_FIELD_NAME_HOST,  "www.example.com" },
         { NULL, NULL }
     };
-
     // Response field filters
     char respFields[2] = {
         HTTPStd_FIELD_NAME_CONTENT_LENGTH,
         NULL
     };
-
     System_printf("Sending a HTTP POST request to '%s'\n", HOSTNAME);//POST
     System_flush();
-
     HTTPCli_construct(&cli);
-
     HTTPCli_setRequestFields(&cli, fields);
-
     HTTPCli_setResponseFields(&cli, respFields);
-
     ret = HTTPCli_initSockAddr((struct sockaddr *)&addr, HOSTNAME, 0);
     if (ret < 0) {
         printError("httpTask: address resolution failed", ret);
     }
-
     ret = HTTPCli_connect(&cli, (struct sockaddr *)&addr, 0, NULL);
     if (ret < 0) {
         printError("httpTask: connect failed", ret);
     }
-
     ret = HTTPCli_sendRequest(&cli, HTTPStd_POST, "/index.html", true);
-
     //ret = HTTPCli_sendRequest(&cli, HTTPStd_POST, REQUEST_URI, false);
     if (ret < 0) {
         printError("httpTask: send failed", ret);
@@ -315,27 +313,22 @@ Void httpPostTask(UArg arg0, UArg arg1)
     if (ret != HTTPStd_OK) {
         printError("httpTask: cannot get status", ret);
     }
-
     System_printf("HTTP Response Status Code: %d\n", ret);
     //TODO: More Handling hast to be done for response care here
     ret = HTTPCli_getResponseField(&cli, data, sizeof(data), &moreFlag);
     if (ret != HTTPCli_FIELD_ID_END) {
         printError("httpTask: response field processing failed", ret);
     }
-
     len = 0;
     do {
         ret = HTTPCli_readResponseBody(&cli, data, sizeof(data), &moreFlag);
         if (ret < 0) {
             printError("httpTask: response body processing failed", ret);
         }
-
         len += ret;
     } while (moreFlag);
-
     System_printf("Recieved %d bytes of payload\n", len);
     System_flush();
-
     HTTPCli_disconnect(&cli);
     HTTPCli_destruct(&cli);
 }
