@@ -63,8 +63,8 @@
 #define REQUEST_URI       "/"
 */
 
-#define HOSTNAME          "webhook.site"
-#define REQUEST_URI       "/47567acc-32ec-4bf4-abd6-c03b7d5e5cef"
+#define HOSTNAME          "esesmarthome.azurewebsites.net"
+#define REQUEST_URI       "/api/measurements"
 
 #define USER_AGENT        "HTTPCli (ARM; TI-RTOS)"
 #define CONTENT_TYPE      "application/json"
@@ -82,15 +82,21 @@ void printError(char *errString, int code)
 Void HTTPPOSTTask(UArg arg0, UArg arg1)
 {
     bool moreFlag = false;
-    char data[64];
+    char data[128];
     int ret;
     int len;
     char CONTENT_LENGTH[3];
     struct sockaddr_in addr;
 
 
+
     //Data to be sent
-    strcpy(data, "{\"val\": 10}");
+    //strcpy(data, "{\"val\": 10}");
+
+    strcpy(data, "{\"deviceId\": 1,\"timestamp\": \"2018-06-23T19:12:36.595Z\",\"temperature\": 20,\"humidity\": 30}");
+
+
+
 
     len = strlen(data);
     sprintf(CONTENT_LENGTH, "%d", len);
