@@ -35,6 +35,7 @@
  *  HTTP Client GET example application
  */
 #include <string.h>
+#include <stdio.h>
 
 /* XDCtools Header files */
 #include <xdc/runtime/Error.h>
@@ -50,11 +51,23 @@
 #include "Board.h"
 
 #include <sys/socket.h>
+/*
+ *
+ *  #define HOSTNAME          "things.ubidots.com"
+ *  #define REQUEST_URI       "/api/v1.6/devices/test/?token={value}"
+ *
+ * */
 
-
+/*
 #define HOSTNAME          "www.example.com"
 #define REQUEST_URI       "/"
+*/
+
+#define HOSTNAME          "webhook.site"
+#define REQUEST_URI       "/47567acc-32ec-4bf4-abd6-c03b7d5e5cef"
+
 #define USER_AGENT        "HTTPCli (ARM; TI-RTOS)"
+#define CONTENT_TYPE      "application/json"
 #define HTTPTASKSTACKSIZE 4096
 
 /*
@@ -64,6 +77,108 @@ void printError(char *errString, int code)
 {
     System_printf("Error! code = %d, desc = %s\n", code, errString);
     BIOS_exit(code);
+}
+//Copied Posttask from xxx
+Void HTTPPOSTTask(UArg arg0, UArg arg1)
+{
+    bool moreFlag = false;
+    char data[64];
+    int ret;
+    int len;
+    char CONTENT_LENGTH[3];
+    struct sockaddr_in addr;
+
+
+    //Data to be sent
+    strcpy(data, "{\"val\": 10}");
+
+    len = strlen(data);
+    sprintf(CONTENT_LENGTH, "%d", len);
+
+    System_printf("\nData: %s\n", data);
+    System_printf("len(int): %d\n", len);
+    System_printf("CONTENT_LENGTH: %s\n", CONTENT_LENGTH);
+
+    HTTPCli_Struct cli;
+    HTTPCli_Field fields[3] = {
+        { HTTPStd_FIELD_NAME_HOST, HOSTNAME },
+        { HTTPStd_FIELD_NAME_USER_AGENT, USER_AGENT },
+        { NULL, NULL }
+    };
+
+    System_printf("Sending a HTTP POST request to '%s'\n", HOSTNAME);
+    System_flush();
+
+    HTTPCli_construct(&cli);
+
+    HTTPCli_setRequestFields(&cli, fields);
+
+    ret = HTTPCli_initSockAddr((struct sockaddr *)&addr, HOSTNAME, 0);
+    if (ret < 0) {
+        printError("httpTask: address resolution failed", ret);
+    }
+
+    ret = HTTPCli_connect(&cli, (struct sockaddr *)&addr, 0, NULL);
+    if (ret < 0) {
+        printError("httpTask: connect failed", ret);
+    }
+
+//************************************************************************************************************
+    ret = HTTPCli_sendRequest(&cli, HTTPStd_POST, REQUEST_URI, true);
+    if (ret < 0) {
+        printError("httpTask: send failed", ret);
+    }
+    else {
+        System_printf("sendRequest successful\n");
+    }
+
+    ret = HTTPCli_sendField(&cli, HTTPStd_FIELD_NAME_CONTENT_LENGTH, CONTENT_LENGTH, false);
+    ret = HTTPCli_sendField(&cli, HTTPStd_FIELD_NAME_CONTENT_TYPE, CONTENT_TYPE, true);
+
+    if (ret < 0) {
+        printError("httpTask: send failed", ret);
+    }
+    else {
+        System_printf("sendField successful\n");
+    }
+
+        ret = HTTPCli_sendRequestBody(&cli, data, strlen(data));
+    if (ret < 0) {
+        printError("httpTask: Variable data couldn't be sent", ret);
+    }
+    else {
+        System_printf("Data sent successfully\n");
+    }
+//*******************************************************************************************************************************
+
+    ret = HTTPCli_getResponseStatus(&cli);
+    if (ret != HTTPStd_OK) {
+        printError("httpTask: cannot get status", ret);
+    }
+
+    System_printf("HTTP Response Status Code: %d\n", ret);
+
+    ret = HTTPCli_getResponseField(&cli, data, sizeof(data), &moreFlag);
+
+    if (ret != HTTPCli_FIELD_ID_END) {
+        printError("httpTask: response field processing failed", ret);
+    }
+
+    len = 0;
+    do {
+        ret = HTTPCli_readResponseBody(&cli, data, sizeof(data), &moreFlag);
+        if (ret < 0) {
+            printError("httpTask: response body processing failed", ret);
+        }
+
+        len += ret;
+    } while (moreFlag);
+
+    System_printf("Received %d bytes of pay-load\n", len);
+    System_flush();
+
+    HTTPCli_disconnect(&cli);
+    HTTPCli_destruct(&cli);
 }
 
 /*
@@ -138,7 +253,7 @@ Void httpTask(UArg arg0, UArg arg1)
 /*
  *  ======== httpTask ========
  *  Makes a HTTP POST request
- */
+
 Void httpPostTask(UArg arg0, UArg arg1)
 {
     bool moreFlag = false;
@@ -224,7 +339,7 @@ Void httpPostTask(UArg arg0, UArg arg1)
     HTTPCli_disconnect(&cli);
     HTTPCli_destruct(&cli);
 }
-
+*/
 
 /*
  *  ======== netIPAddrHook ========
@@ -243,7 +358,10 @@ void netIPAddrHook(unsigned int IPAddr, unsigned int IfIdx, unsigned int fAdd)
         Task_Params_init(&taskParams);
         taskParams.stackSize = HTTPTASKSTACKSIZE;
         taskParams.priority = 1;
-        taskHandle = Task_create((Task_FuncPtr)httpTask, &taskParams, &eb);
+        //TODO: Add Posttask here
+        //taskHandle = Task_create((Task_FuncPtr)httpTask, &taskParams, &eb);
+        taskHandle = Task_create((Task_FuncPtr)HTTPPOSTTask, &taskParams, &eb);
+
         if (taskHandle == NULL) {
             printError("netIPAddrHook: Failed to create HTTP Task\n", -1);
         }
