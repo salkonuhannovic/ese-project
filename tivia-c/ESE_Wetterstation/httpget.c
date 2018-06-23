@@ -36,7 +36,7 @@
  */
 #include <string.h>
 #include <stdio.h>
-
+#include <stdlib.h>
 /* XDCtools Header files */
 #include <xdc/runtime/Error.h>
 #include <xdc/runtime/System.h>
@@ -52,38 +52,48 @@
 
 #include <sys/socket.h>
 #include <driverlib/flash.h>
-
-//MOCK
 /*
+//MOCK
 #define HOSTNAME          "webhook.site"
 #define REQUEST_URI       "/47567acc-32ec-4bf4-abd6-c03b7d5e5cef"
+#define CONFIG_URI       "/47567acc-32ec-4bf4-abd6-c03b7d5e5cef/"
+
 */
-//GET
+//OUR SERVICE
 #define HOSTNAME          "esesmarthome.azurewebsites.net"
-#define CONFIG_URI       "/setup/00:23"
-//POST
-/*
-#define HOSTNAME          "esesmarthome.azurewebsites.net"
-*/
+#define CONFIG_URI       "/setup/"
 #define REQUEST_URI       "/api/measurements"
 
 #define USER_AGENT        "HTTPCli (ARM; TI-RTOS)"
 #define CONTENT_TYPE      "application/json"
 #define HTTPTASKSTACKSIZE 4096
-
-
+//************************************************************************************************************GLOBALS
+static volatile char deviceID;
 static volatile char g_devicemac[18];
-/*
- *  ======== printError ========
- */
-void printError(char *errString, int code)
-{
+//************************************************************************************************************PROTOTYPES
+void printError(char *errString, int code);
+int main(void);
+void netIPAddrHook(unsigned int IPAddr, unsigned int IfIdx, unsigned int fAdd);
+void getMacAddress(void);
+void httpTask(UArg arg0, UArg arg1);
+void HTTPPOSTTask(UArg arg0, UArg arg1);
+//************************************************************************************************************FUNCTIONS
 
-    System_printf("Error! code = %d, desc = %s\n", code, errString);
-    BIOS_exit(code);
-}
+/*TODOS
+ * -Get devideID by HTTP GET - Use MAC as Identifier in CONFIG_URI
+ * --Include MAC in HTTP GET Request autom.
+ * --Extract assigned devideID out auf HTTP GET and store it
+ * -Post Values periodically using HTTP POST including deviceID
+ * --Get Values from Sensors
+ * --Build JSON String autom.
+ * --Include deviceID in POST Requests
+ * -Updating Timesheet
+ */
+
+
+
 //Copied Posttask from xxx
-Void HTTPPOSTTask(UArg arg0, UArg arg1)
+void HTTPPOSTTask(UArg arg0, UArg arg1)
 {
     bool moreFlag = false;
     char data[128];
@@ -152,7 +162,7 @@ Void HTTPPOSTTask(UArg arg0, UArg arg1)
     else {
         System_printf("Data sent successfully\n");
     }
-//*************************************************************************************************************RECEIVE
+//************************************************************************************************************RECEIVE
 
     ret = HTTPCli_getResponseStatus(&cli);
     if (ret != HTTPStd_OK) {
@@ -185,13 +195,22 @@ Void HTTPPOSTTask(UArg arg0, UArg arg1)
     HTTPCli_disconnect(&cli);
     HTTPCli_destruct(&cli);
 }
-
+//https://stackoverflow.com/questions/8465006/how-do-i-concatenate-two-strings-in-c
+char* concat(const char *s1, const char *s2)
+{
+    char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
+    // in real code you would check for errors in malloc here
+    strcpy(result, s1);
+    strcat(result, s2);
+    return result;
+}
 /*
  *  ======== httpTask ========
  *  Makes a HTTP GET request
  */
-Void httpTask(UArg arg0, UArg arg1)
+void httpTask(UArg arg0, UArg arg1)
 {
+    char* config = concat(CONFIG_URI,g_devicemac);
     bool moreFlag = false;
     char data[64];
     int ret;
@@ -222,7 +241,8 @@ Void httpTask(UArg arg0, UArg arg1)
         printError("httpTask: connect failed", ret);
     }
 
-    ret = HTTPCli_sendRequest(&cli, HTTPStd_GET, CONFIG_URI, false);
+
+    ret = HTTPCli_sendRequest(&cli, HTTPStd_GET, config, false);
     if (ret < 0) {
         printError("httpTask: send failed", ret);
     }
@@ -245,6 +265,12 @@ Void httpTask(UArg arg0, UArg arg1)
         if (ret < 0) {
             printError("httpTask: response body processing failed", ret);
         }
+        if(ret>0){
+            deviceID = data[0];
+            System_printf("Recieved DeviceID: %c\n", data[0]);
+            System_flush();
+
+        }
 
         len += ret;
     } while (moreFlag);
@@ -252,11 +278,15 @@ Void httpTask(UArg arg0, UArg arg1)
     System_printf("Recieved %d bytes of payload\n", len);
     System_flush();
 
+    free(config);
+
     HTTPCli_disconnect(&cli);
     HTTPCli_destruct(&cli);
 }
-
-getMacAddress()
+/*
+ *  ======== getMacAddress ========
+ */
+void getMacAddress(void)
 {
     uint32_t ui32User0, ui32User1;
     uint8_t pui8MACAddr[6];
@@ -322,8 +352,8 @@ void netIPAddrHook(unsigned int IPAddr, unsigned int IfIdx, unsigned int fAdd)
         taskParams.stackSize = HTTPTASKSTACKSIZE;
         taskParams.priority = 1;
         //TODO: Add Posttask here
-        //taskHandle = Task_create((Task_FuncPtr)httpTask, &taskParams, &eb);
-        taskHandle = Task_create((Task_FuncPtr)HTTPPOSTTask, &taskParams, &eb);
+        taskHandle = Task_create((Task_FuncPtr)httpTask, &taskParams, &eb);
+        //taskHandle = Task_create((Task_FuncPtr)HTTPPOSTTask, &taskParams, &eb);
 
         if (taskHandle == NULL) {
             printError("netIPAddrHook: Failed to create HTTP Task\n", -1);
@@ -354,9 +384,12 @@ int main(void)
 
     return (0);
 }
-//*****************************************************************************
-//
-// Prints the current MAC address to the UART.
-//
-//*****************************************************************************
+/*
+ *  ======== printError ========
+ */
+void printError(char *errString, int code)
+{
 
+    System_printf("Error! code = %d, desc = %s\n", code, errString);
+    BIOS_exit(code);
+}
