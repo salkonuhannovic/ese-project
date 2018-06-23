@@ -10,15 +10,16 @@ namespace ESE.SmartHome.SensorMock.Mocks
         [JsonProperty("timestamp")]
         public DateTime Timestamp { get; set; }
 
-        [JsonProperty("value")]
+        [JsonProperty("temperature")]
         public double Temperature { get; set; }
         public TemperatureScale TemperatureScale { get; set; }
 
+        [JsonProperty("humidity")]
         public double Humidity { get; set; }
 
         public override string ToString()
         {
-            return $"Measurement (Timestamp = {Timestamp}, Value = {Temperature})";
+            return $"Measurement (Timestamp = {Timestamp}, Temperature = {Temperature}, Humidity = {Humidity})";
         }
     }
 

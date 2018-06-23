@@ -5,7 +5,7 @@
 
 <h2 class="text-info"><i class="fa fa-area-chart"></i> | Echtzeitdaten</h2>
 
-<canvas id="chart" style="width: 512px; height: 320px"></canvas>
+<canvas id="chart" style="width: 800px; height: 450px"></canvas>
 
 @section Scripts
 {
@@ -57,16 +57,15 @@
                             ]
                         },
                         options: {
-                            responsive: false,
+                            responsive: true,
                             animation: {
                                 duration: speed * 1.5,
                                 easing: 'linear'
                             },
-                            legend: false,
                             scales: {
                                 xAxes: [
                                     {
-                                        display: true
+                                        display: false
                                     }
                                 ],
                                 yAxes: [
@@ -93,8 +92,7 @@
 
                         labels.push(message.timestamp);
                         labels.shift();
-
-
+                        
                         chart.update();
                     });
 
