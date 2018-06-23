@@ -20,6 +20,12 @@ namespace ESE.SmartHome.Api.Sensors
             _unitOfWork = unitOfWork;
         }
 
+        [HttpGet("/setup/{mac}")]
+        public IActionResult GetDeviceId(string mac)
+        {
+            return Ok(1);
+        }
+
         /// <summary>
         /// Add measurement data
         /// </summary>
@@ -34,8 +40,7 @@ namespace ESE.SmartHome.Api.Sensors
             {
                 DeviceId = dto.DeviceId,
                 Temperature = dto.Temperature,
-                Humidity = dto.Humidity,
-                Timestamp = DateTime.UtcNow
+                Humidity = dto.Humidity
             };
 
             _unitOfWork.Measurements.Add(measurement);
