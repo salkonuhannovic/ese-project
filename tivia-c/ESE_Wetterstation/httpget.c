@@ -51,21 +51,20 @@
 #include "Board.h"
 
 #include <sys/socket.h>
-/*
- *
- *  #define HOSTNAME          "things.ubidots.com"
- *  #define REQUEST_URI       "/api/v1.6/devices/test/?token={value}"
- *
- * */
 
+//MOCK
 /*
-#define HOSTNAME          "www.example.com"
-#define REQUEST_URI       "/"
+#define HOSTNAME          "webhook.site"
+#define REQUEST_URI       "/47567acc-32ec-4bf4-abd6-c03b7d5e5cef"
 */
-
+//GET
+#define HOSTNAME          "esesmarthome.azurewebsites.net"
+#define REQUEST_URI       "/setup/00:23"
+//POST
+/*
 #define HOSTNAME          "esesmarthome.azurewebsites.net"
 #define REQUEST_URI       "/api/measurements"
-
+*/
 #define USER_AGENT        "HTTPCli (ARM; TI-RTOS)"
 #define CONTENT_TYPE      "application/json"
 #define HTTPTASKSTACKSIZE 4096
@@ -352,8 +351,8 @@ void netIPAddrHook(unsigned int IPAddr, unsigned int IfIdx, unsigned int fAdd)
         taskParams.stackSize = HTTPTASKSTACKSIZE;
         taskParams.priority = 1;
         //TODO: Add Posttask here
-        //taskHandle = Task_create((Task_FuncPtr)httpTask, &taskParams, &eb);
-        taskHandle = Task_create((Task_FuncPtr)HTTPPOSTTask, &taskParams, &eb);
+        taskHandle = Task_create((Task_FuncPtr)httpTask, &taskParams, &eb);
+        //taskHandle = Task_create((Task_FuncPtr)HTTPPOSTTask, &taskParams, &eb);
 
         if (taskHandle == NULL) {
             printError("netIPAddrHook: Failed to create HTTP Task\n", -1);
@@ -374,8 +373,8 @@ int main(void)
     /* Turn on user LED */
     GPIO_write(Board_LED0, Board_LED_ON);
 
-    System_printf("Starting the HTTP GET example\nSystem provider is set to "
-            "SysMin. Halt the target to view any SysMin contents in ROV.\n");
+    System_printf("Starting the HTTP POST Code\n");
+
     /* SysMin will only print to the console when you call flush or exit */
     System_flush();
 
