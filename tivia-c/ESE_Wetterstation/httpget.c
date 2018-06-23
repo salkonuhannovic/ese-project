@@ -72,7 +72,7 @@
 #define HTTPTASKSTACKSIZE 4096
 
 
-static volatile uint8_t device_mac[6];
+static volatile char g_devicemac[18];
 /*
  *  ======== printError ========
  */
@@ -260,7 +260,8 @@ getMacAddress()
 {
     uint32_t ui32User0, ui32User1;
     uint8_t pui8MACAddr[6];
-    uint8_t count = 0;
+
+
 
       //
       // Get the MAC address from the UART0 and UART1 registers in NV ram.
@@ -290,11 +291,13 @@ getMacAddress()
       pui8MACAddr[5] = (ui32User1 >> 16) & 0xff;
 
       System_printf("MAC: %02x-%02x-%02x-%02x-%02x-%02x\n", pui8MACAddr[0], pui8MACAddr[1], pui8MACAddr[2], pui8MACAddr[3], pui8MACAddr[4], pui8MACAddr[5]);
+
+
+      snprintf(g_devicemac, sizeof(g_devicemac), "%02x:%02x:%02x:%02x:%02x:%02x",
+               pui8MACAddr[0], pui8MACAddr[1], pui8MACAddr[2], pui8MACAddr[3], pui8MACAddr[4], pui8MACAddr[5]);
+
       System_flush();
 
-      for(count =0; count<6;count++){
-          device_mac[count] = pui8MACAddr[count];
-      }
 
 }
 
