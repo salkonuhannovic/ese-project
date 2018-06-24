@@ -77,6 +77,7 @@ void netIPAddrHook(unsigned int IPAddr, unsigned int IfIdx, unsigned int fAdd);
 void getMacAddress(void);
 void httpTask(UArg arg0, UArg arg1);
 void HTTPPOSTTask(UArg arg0, UArg arg1);
+char* concat(const char *s1, const char *s2);
 //************************************************************************************************************FUNCTIONS
 
 /*TODOS
@@ -101,9 +102,10 @@ void HTTPPOSTTask(UArg arg0, UArg arg1)
     int len;
     char CONTENT_LENGTH[3];
     struct sockaddr_in addr;
-
+    char* try2 =concat("{\"deviceId\":", deviceID);
+    char* try = concat(try2, ",\"temperature\": 20,\"humidity\": 20}");
     //Data to be sent
-    strcpy(data, "{\"deviceId\": 1,\"timestamp\": \"2018-06-24T19:12:36.595Z\",\"temperature\": 25,\"humidity\": 45.6}");
+    strcpy(data, try);
 
     len = strlen(data);
     sprintf(CONTENT_LENGTH, "%d", len);
@@ -128,18 +130,18 @@ void HTTPPOSTTask(UArg arg0, UArg arg1)
 
     ret = HTTPCli_initSockAddr((struct sockaddr *)&addr, HOSTNAME, 0);
     if (ret < 0) {
-        printError("httpTask: address resolution failed", ret);
+        printError("POSTTask: address resolution failed", ret);
     }
 
     ret = HTTPCli_connect(&cli, (struct sockaddr *)&addr, 0, NULL);
     if (ret < 0) {
-        printError("httpTask: connect failed", ret);
+        printError("POSTTask: connect failed", ret);
     }
 
 //************************************************************************************************************SEND
     ret = HTTPCli_sendRequest(&cli, HTTPStd_POST, REQUEST_URI, true);
     if (ret < 0) {
-        printError("httpTask: send failed", ret);
+        printError("POSTTask: send failed", ret);
     }
     else {
         System_printf("sendRequest successful\n");
@@ -149,7 +151,7 @@ void HTTPPOSTTask(UArg arg0, UArg arg1)
     ret = HTTPCli_sendField(&cli, HTTPStd_FIELD_NAME_CONTENT_TYPE, CONTENT_TYPE, true);
 
     if (ret < 0) {
-        printError("httpTask: send failed", ret);
+        printError("POSTTask: send failed", ret);
     }
     else {
         System_printf("sendField successful\n");
@@ -157,7 +159,7 @@ void HTTPPOSTTask(UArg arg0, UArg arg1)
 
         ret = HTTPCli_sendRequestBody(&cli, data, strlen(data));
     if (ret < 0) {
-        printError("httpTask: Variable data couldn't be sent", ret);
+        printError("POSTTask: Variable data couldn't be sent", ret);
     }
     else {
         System_printf("Data sent successfully\n");
@@ -167,7 +169,7 @@ void HTTPPOSTTask(UArg arg0, UArg arg1)
     ret = HTTPCli_getResponseStatus(&cli);
     if (ret != HTTPStd_OK) {
         if(ret != 204){
-        printError("httpTask: cannot get status", ret);
+        printError("POSTTask: cannot get status", ret);
 
         }
     }
@@ -176,14 +178,14 @@ void HTTPPOSTTask(UArg arg0, UArg arg1)
     ret = HTTPCli_getResponseField(&cli, data, sizeof(data), &moreFlag);
 
     if (ret != HTTPCli_FIELD_ID_END) {
-        printError("httpTask: response field processing failed", ret);
+        printError("POSTTask: response field processing failed", ret);
     }
 
     len = 0;
     do {
         ret = HTTPCli_readResponseBody(&cli, data, sizeof(data), &moreFlag);
         if (ret < 0) {
-            printError("httpTask: response body processing failed", ret);
+            printError("POSTTask: response body processing failed", ret);
         }
 
         len += ret;
@@ -192,6 +194,8 @@ void HTTPPOSTTask(UArg arg0, UArg arg1)
     System_printf("Received %d bytes of pay-load\n", len);
     System_flush();
 
+    free(try);
+    free(try2);
     HTTPCli_disconnect(&cli);
     HTTPCli_destruct(&cli);
 }
@@ -282,6 +286,26 @@ void httpTask(UArg arg0, UArg arg1)
 
     HTTPCli_disconnect(&cli);
     HTTPCli_destruct(&cli);
+
+    //TEST
+    static Task_Handle taskHandle;
+        Task_Params taskParams;
+        Error_Block eb;
+    if(deviceID!=0){
+        Error_init(&eb);
+
+        Task_Params_init(&taskParams);
+        taskParams.stackSize = HTTPTASKSTACKSIZE;
+        taskParams.priority = 1;
+        //TODO: Add Posttask here
+
+        taskHandle = Task_create((Task_FuncPtr)HTTPPOSTTask, &taskParams, &eb);
+
+     if (taskHandle == NULL) {
+         printError("netIPAddrHook: Failed to create HTTP Task\n", -1);
+     }
+
+    }
 }
 /*
  *  ======== getMacAddress ========
@@ -371,9 +395,10 @@ int main(void)
     Board_initGPIO();
     Board_initEMAC();
 
+
     /* Turn on user LED */
     GPIO_write(Board_LED0, Board_LED_ON);
-
+    deviceID=0;
     System_printf("Starting the HTTP POST Code\n");
 
     /* SysMin will only print to the console when you call flush or exit */
