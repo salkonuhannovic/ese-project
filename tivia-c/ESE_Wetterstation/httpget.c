@@ -34,6 +34,42 @@
  *  ======== httpget.c ========
  *  HTTP Client GET example application
  */
+
+#include <stdbool.h>
+#include <stdint.h>
+#include <inc/hw_memmap.h>
+
+/* XDCtools Header files */
+#include <xdc/std.h>
+#include <xdc/cfg/global.h>
+#include <xdc/runtime/System.h>
+#include <xdc/runtime/Error.h>
+#include <xdc/runtime/Memory.h>
+
+/* BIOS Header files */
+#include <ti/sysbios/BIOS.h>
+#include <ti/sysbios/knl/Task.h>
+#include <ti/drivers/I2C.h>
+
+/* Currently unused RTOS headers that are needed
+ * for advanced features like IPC. */
+#include <ti/sysbios/knl/Semaphore.h>
+#include <ti/sysbios/knl/Mailbox.h>
+#include <ti/sysbios/knl/Event.h>
+#include <ti/sysbios/hal/Timer.h>
+
+/* Driverlib headers */
+#include <driverlib/gpio.h>
+
+/* Board Header files */
+#include <Board.h>
+#include <EK_TM4C1294XL.h>
+
+/* Application headers */
+#include <local_inc/UART_Task.h>
+#include <local_inc/HTUTask.h>
+#include <local_inc/Poll_Task.h>
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,18 +88,19 @@
 
 #include <sys/socket.h>
 #include <driverlib/flash.h>
-/*
-//MOCK
-#define HOSTNAME          "webhook.site"
-#define REQUEST_URI       "/47567acc-32ec-4bf4-abd6-c03b7d5e5cef"
-#define CONFIG_URI       "/47567acc-32ec-4bf4-abd6-c03b7d5e5cef/"
 
-*/
+//MOCK https://webhook.site/d6e1ab21-cb8e-4635-85f9-0046b7873f6b
+
+#define HOSTNAME          "webhook.site"
+#define REQUEST_URI       "/d6e1ab21-cb8e-4635-85f9-0046b7873f6b"
+#define CONFIG_URI       "/d6e1ab21-cb8e-4635-85f9-0046b7873f6b/"
+
+/*
 //OUR SERVICE
 #define HOSTNAME          "esesmarthome.azurewebsites.net"
 #define CONFIG_URI       "/setup/"
 #define REQUEST_URI       "/api/measurements"
-
+*/
 #define USER_AGENT        "HTTPCli (ARM; TI-RTOS)"
 #define CONTENT_TYPE      "application/json"
 #define HTTPTASKSTACKSIZE 4096
@@ -390,11 +427,24 @@ void netIPAddrHook(unsigned int IPAddr, unsigned int IfIdx, unsigned int fAdd)
  */
 int main(void)
 {
+    /*EVA
+   /* uint32_t ui32SysClock;
+        ui32SysClock = Board_initGeneral(120000000);
+*/
+        //Init I2C
+        //Board_initGPIO();
+
+
+        /*TODO: Setup Mailboxes?*/
+        /*TODO: Setup UART*/
+
+
+
     /* Call board init functions */
     Board_initGeneral();
     Board_initGPIO();
     Board_initEMAC();
-
+Board_initI2C();
 
     /* Turn on user LED */
     GPIO_write(Board_LED0, Board_LED_ON);
@@ -403,7 +453,12 @@ int main(void)
 
     /* SysMin will only print to the console when you call flush or exit */
     System_flush();
+ System_printf("Poll Task setup\n");
+        setup_Poll_Task();
 
+        /* Start BIOS */
+        System_printf("Start BIOS\n");
+        System_flush();
     /* Start BIOS */
     BIOS_start();
 
