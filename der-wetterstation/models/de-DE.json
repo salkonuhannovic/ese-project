@@ -1,0 +1,36 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "bestes projekt",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": [
+            "abbrechen"
+          ]
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": [
+            "hilfe"
+          ]
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": [
+            "stop"
+          ]
+        },
+        {
+          "name": "status",
+          "samples": [
+            "sprich zu mir",
+            "erzähl mir was",
+            "beste projekt",
+            "coolste projekt"
+          ]
+        }
+      ]
+    }
+  }
+}
