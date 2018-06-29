@@ -97,6 +97,7 @@
 
 /*
 //OUR SERVICE
+ *
 #define HOSTNAME          "esesmarthome.azurewebsites.net"
 #define CONFIG_URI       "/setup/"
 #define REQUEST_URI       "/api/measurements"
@@ -310,8 +311,14 @@ void httpTask(UArg arg0, UArg arg1)
             deviceID = data[0];
             System_printf("Recieved DeviceID: %c\n", data[0]);
             System_flush();
+            //HANNES Hier Poll einbauen
 
         }
+        setup_Poll_Task(); //HANNES
+
+                    System_printf("Poll Task setup\n");
+                    System_flush();
+        //HANNES
 
         len += ret;
     } while (moreFlag);
@@ -444,7 +451,7 @@ int main(void)
     Board_initGeneral();
     Board_initGPIO();
     Board_initEMAC();
-Board_initI2C();
+    Board_initI2C();
 
     /* Turn on user LED */
     GPIO_write(Board_LED0, Board_LED_ON);
@@ -453,12 +460,12 @@ Board_initI2C();
 
     /* SysMin will only print to the console when you call flush or exit */
     System_flush();
- System_printf("Poll Task setup\n");
-        setup_Poll_Task();
+    //System_printf("Poll Task setup\n");
+    //setup_Poll_Task(); HANNES
 
-        /* Start BIOS */
-        System_printf("Start BIOS\n");
-        System_flush();
+    /* Start BIOS */
+    System_printf("Start BIOS\n");
+    System_flush();
     /* Start BIOS */
     BIOS_start();
 

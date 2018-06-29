@@ -88,7 +88,7 @@ void PollingFxn(UArg arg0, UArg arg1)
 
         PollingFunction(&I2CHandle, &I2CTransaction, &temp, &rh);
         /*TODO: Mailbox_send*/
-        Task_sleep(1000);
+        Task_sleep(5000);
 
     }
 }

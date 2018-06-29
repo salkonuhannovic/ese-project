@@ -32,6 +32,8 @@
 #include <local_inc/Poll_Task.h>
 #include <local_inc/HTUTask.h>
 
+//#include "httpget.c" //HANNES
+
 /* WERTE AUS DEM HTU21D BEISPIELCODE:
  * HTU21D_ADDR                 (0x40)
  * HTU21D_CLEAR_BIT            (0x40)
