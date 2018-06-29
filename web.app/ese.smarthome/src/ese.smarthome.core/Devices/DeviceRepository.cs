@@ -32,6 +32,6 @@ namespace ESE.SmartHome.Core.Devices
             return await Devices.Where(d => d.IsActive).ToListAsync();
         }
 
-        private IQueryable<Device> Devices => _context.Devices.Include(m => m.Measurements);
+        private IQueryable<Device> Devices => _context.Devices.Include(s => s.Setting).Include(m => m.Measurements);
     }
 }

@@ -1,0 +1,34 @@
+﻿@using ESE.SmartHome.App.Setup
+@model ViewDeviceSetup.QueryResult
+
+@{
+    ViewBag.Title = "View Devices";
+    Layout = "_Layout";
+}
+
+<section>
+    <div class="container">
+
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Identifier</th>
+                    <th scope="col">Created</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (var d in Model.Devices)
+                {
+                    <tr>
+                        <th scope="row">@(d.Id)</th>
+                        <td>@(d.Name)</td>
+                        <td>@(d.Created.ToShortDateString())</td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    </div>
+</section>

@@ -23,7 +23,8 @@ namespace ESE.SmartHome.Api.Sensors
         [HttpGet("/setup/{mac}")]
         public IActionResult GetDeviceId(string mac)
         {
-            return Ok(1);
+            //Todo check if mac address exists
+            return Ok(3);
         }
 
         /// <summary>
