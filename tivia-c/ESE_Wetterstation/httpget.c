@@ -68,6 +68,7 @@
 #include <local_inc/HTUTask.h>
 #include <local_inc/Poll_Task.h>
 #include <local_inc/httpget.h>
+#include <local_inc/jsmn.h>
 
 #include <string.h>
 #include <stdio.h>
@@ -148,8 +149,10 @@ void httpTask(UArg arg0, UArg arg1)
         //POST
         Mailbox_pend(g_temp_mailbox, (xdc_Ptr)&g_temperature, BIOS_WAIT_FOREVER);
         Mailbox_pend(g_humi_mailbox, (float *) &g_rhval, BIOS_WAIT_FOREVER);
-        System_printf("Another Round Temperature %0.2f humidity %f\n", g_temperature, g_rhval);
+        System_printf("Trying to POST: ID:%c temperature: %0.2f humidity: %f\n", deviceID, g_temperature, g_rhval);
         System_flush();
+        doHttpPost(g_temperature,g_rhval);
+
 
     }
 
@@ -166,8 +169,10 @@ int doHttpPost(float temp, float humid)
     struct sockaddr_in addr;
     char* try2 = concat("{\"deviceId\":", deviceID);
     char* try = concat(try2, ",\"temperature\": 20,\"humidity\": 20}");
+
+    snprintf(data, sizeof(data), "{\"deviceId\":%d,\"temperature\": %f,\"humidity\": %f}", deviceID, temp, humid);
     //Data to be sent
-    strcpy(data, try);
+    //strcpy(data, try); HANNES
 
     len = strlen(data);
     sprintf(CONTENT_LENGTH, "%d", len);
@@ -175,6 +180,7 @@ int doHttpPost(float temp, float humid)
     System_printf("\nData: %s\n", data);
     System_printf("len(int): %d\n", len);
     System_printf("CONTENT_LENGTH: %s\n", CONTENT_LENGTH);
+
 
     HTTPCli_Struct cli;
     HTTPCli_Field fields[3] = {
@@ -319,14 +325,14 @@ int doHttpGet()
         if (ret < 0) {
             printError("httpTask: response body processing failed", ret);
         }
-        if(ret>0){
-            deviceID = data[0];
+        //DEBUG
+        /*if(ret>0){
+            deviceID = (int) data[0];
             System_printf("Received DeviceID: %c\n", data[0]);
             System_flush();
-            return data[0];
 
-        }
-
+        }*/
+        deviceID = 3;
 
         len += ret;
     } while (moreFlag);
@@ -339,7 +345,7 @@ int doHttpGet()
     HTTPCli_disconnect(&cli);
     HTTPCli_destruct(&cli);
 
-    return 0;
+    return deviceID;
 
     }
 

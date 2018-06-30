@@ -68,24 +68,24 @@
 #include <driverlib/flash.h>
 //************************************************************************************************************DEFINES
 //MOCK https://webhook.site/d6e1ab21-cb8e-4635-85f9-0046b7873f6b
-/*
+
 #define HOSTNAME          "webhook.site"
 #define REQUEST_URI       "/d6e1ab21-cb8e-4635-85f9-0046b7873f6b"
 #define CONFIG_URI       "/d6e1ab21-cb8e-4635-85f9-0046b7873f6b/"
-*/
-//OUR SERVICE
 
+//OUR SERVICE
+/*
 #define HOSTNAME          "esesmarthome.azurewebsites.net"
 #define CONFIG_URI       "/setup/"
 #define REQUEST_URI       "/api/measurements"
-
+*/
 #define USER_AGENT        "HTTPCli (ARM; TI-RTOS)"
 #define CONTENT_TYPE      "application/json"
 #define HTTPTASKSTACKSIZE 4096
 
 #define POLLINTVALL 2 //Polling Intervall in Seconds
 //************************************************************************************************************GLOBALS
-static volatile char deviceID;
+static volatile uint8_t deviceID;
 static volatile char g_devicemac[18];
 static volatile float g_temperature;
 static volatile float g_rhval;
