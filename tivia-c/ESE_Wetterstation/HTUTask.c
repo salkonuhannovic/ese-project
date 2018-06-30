@@ -32,7 +32,8 @@
 #include <local_inc/Poll_Task.h>
 #include <local_inc/HTUTask.h>
 
-//#include "httpget.c" //HANNES
+
+
 
 /* WERTE AUS DEM HTU21D BEISPIELCODE:
  * HTU21D_ADDR                 (0x40)
@@ -185,6 +186,7 @@ float GetTemperature(I2C_Handle *I2CHandle, I2C_Transaction *I2CTransaction)
         * ........
         * ........*/
         sprintf(Output, "Temperature: %.2f °C", temperature);
+
         System_printf("%s\n", Output);
         System_flush();
 
@@ -233,8 +235,10 @@ float GetRelativeHumidity(I2C_Handle *I2CHandle, I2C_Transaction *I2CTransaction
         * ........*/
 
         sprintf(Output, "Relative Humidity : %.2f %%", rhval);
+
         System_printf("%s\n", Output);
         System_flush();
+
 
 
     }
