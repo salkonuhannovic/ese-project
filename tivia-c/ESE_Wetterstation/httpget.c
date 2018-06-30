@@ -1,3 +1,5 @@
+
+
 /*
  * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
@@ -95,14 +97,13 @@ Mailbox_Handle g_temp_mailbox;
 Mailbox_Handle g_humi_mailbox;
 //************************************************************************************************************FUNCTIONS
 
-/*TODOS
- * -Post Values periodically using HTTP POST including deviceID
- * --Build JSON String autom.
- * --Include deviceID in POST Requests
- */
 
+/*
+ *  ======== initTempBox ========
+ *  Initializes Mailbox for Temperature Values
+ */
 void initTempBox(){
-    /*init Mailbox*/
+
         Error_Block eb;
         Mailbox_Params mailboxParams;
         Mailbox_Params_init(&mailboxParams);
@@ -113,8 +114,12 @@ void initTempBox(){
         }
 
 }
+/*
+ *  ======== initHumiBox ========
+ *  Initializes Mailbox for Humidity Values
+ */
 void initHumiBox(){
-    /*init Mailbox*/
+
         Error_Block eb;
         Mailbox_Params mailboxParams;
         Mailbox_Params_init(&mailboxParams);
@@ -135,24 +140,29 @@ void initHumiBox(){
  */
 void httpTask(UArg arg0, UArg arg1)
 {
-    Task_sleep(POLLINTVALL*1000);
-    uint8_t debugger = 1;
-    if(doHttpGet()==0){//No ID received
-        System_printf("httpTask: No ID received. Aborting.");//POST
-        System_flush();
-       // BIOS_exit(1); //HANNES KOMMENTAR RAUSNEHMEN
-    }
 
+    #ifdef DEBUG
+    uint8_t debugger = 1;
+    #endif
+    Task_sleep(POLLINTVALL*1000); //Initial Sleep
+
+    if(doHttpGet()==0){
+        printError("httpTask: No ID received. Aborting.",1);
+    }
 
     while(1){
         Task_sleep(POLLINTVALL*1000);
-        //POST
-        Mailbox_pend(g_temp_mailbox, (xdc_Ptr)&g_temperature, BIOS_WAIT_FOREVER);
+
+        Mailbox_pend(g_temp_mailbox, (float *) &g_temperature, BIOS_WAIT_FOREVER);
         Mailbox_pend(g_humi_mailbox, (float *) &g_rhval, BIOS_WAIT_FOREVER);
+
+        #ifdef DEBUG
         System_printf("Trying to POST: ID:%c temperature: %0.2f humidity: %f ROUND: %d\n", deviceID, g_temperature, g_rhval, debugger);
         System_flush();
         debugger++;
-        doHttpPost(&g_temperature,&g_rhval);
+        #endif
+
+        doHttpPost(&g_temperature, &g_rhval);
 
 
     }
@@ -160,20 +170,18 @@ void httpTask(UArg arg0, UArg arg1)
 }
 
 //Copied and edited Posttask from https://e2e.ti.com/support/embedded/tirtos/f/355/t/555614?HTTP-POST-sample
-int doHttpPost(float *temp, float *humid)
+int doHttpPost(volatile float *temp,volatile float *humid)
 {
     bool moreFlag = false;
-    char data[128];
+    char data[64];
     int ret;
     int len;
     char CONTENT_LENGTH[3];
     struct sockaddr_in addr;
-    //char* try2 = concat("{\"deviceId\":", deviceID);
-    //char* try = concat(try2, ",\"temperature\": 20,\"humidity\": 20}");
 
-    snprintf(data, sizeof(data), "{\"deviceId\":%d,\"temperature\": %f,\"humidity\": %f}", deviceID, *temp, *humid);
-    //Data to be sent
-    //strcpy(data, try); HANNES
+
+    snprintf(data, sizeof(data), "{\"deviceId\":%d,\"temperature\": %.2f,\"humidity\": %.2f}", deviceID, *temp, *humid);
+
 
     len = strlen(data);
     sprintf(CONTENT_LENGTH, "%d", len);
@@ -403,7 +411,7 @@ int main(void)
 
     System_printf("Poll Task setup\n");
     System_flush();
-    setup_Poll_Task(g_temp_mailbox, g_humi_mailbox); //HANNES
+    setup_Poll_Task(g_temp_mailbox, g_humi_mailbox);
 
     /* Start BIOS */
     System_printf("Start BIOS\n");

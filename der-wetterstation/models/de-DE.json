@@ -23,14 +23,74 @@
         },
         {
           "name": "status",
+          "slots": [
+            {
+              "name": "deviceID",
+              "type": "AMAZON.Room",
+              "samples": [
+                "Abstellraum",
+                "Kühlraum",
+                "Kühlschrank",
+                "Bier",
+                "W C",
+                "Garten ",
+                "Balkon",
+                "Badezimmer",
+                "Küche",
+                "Wohnzimmer",
+                "Schlafzimmer"
+              ]
+            }
+          ],
           "samples": [
-            "sprich zu mir",
-            "erzähl mir was",
-            "beste projekt",
-            "coolste projekt"
+            "{deviceID}",
+            "Temperatur im {deviceID}",
+            "nach {deviceID}",
+            "erzähle mir etwas über {deviceID}",
+            "Information über {deviceID}",
+            "Status im {deviceID}"
           ]
         }
       ]
-    }
+    },
+    "dialog": {
+      "intents": [
+        {
+          "name": "status",
+          "confirmationRequired": false,
+          "slots": [
+            {
+              "name": "deviceID",
+              "type": "AMAZON.Room",
+              "elicitationRequired": true,
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.Slot.909355876773.712119167359"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "prompts": [
+      {
+        "id": "Elicit.Slot.909355876773.712119167359",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Von welche Gerät möchtest du Informationen abrufen ?"
+          }
+        ]
+      },
+      {
+        "id": "Confirm.Slot.110995351347.878132721657",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Möchten Sie Informationen für Gerät {deviceID} abrufen?"
+          }
+        ]
+      }
+    ]
   }
 }
