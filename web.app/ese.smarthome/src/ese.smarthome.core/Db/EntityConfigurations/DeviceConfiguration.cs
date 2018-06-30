@@ -1,5 +1,4 @@
 ﻿using ESE.SmartHome.Core.Devices;
-using ESE.SmartHome.Core.Measurements;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

@@ -17,7 +17,7 @@
 /* BIOS Header files */
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Task.h>
-
+#include <ti/sysbios/knl/Mailbox.h>
 /* Driverlib headers */
 #include <driverlib/gpio.h>
 
@@ -28,6 +28,12 @@
 /* Application headers */
 #include <local_inc/Poll_Task.h>
 #include <local_inc/HTUTask.h>
+#include <local_inc/httpget.h> //HANNES
+
+//#define POLLINTVALL 1 //Polling Intervall in Seconds //HANNES
+
+Mailbox_Handle g_temp_mailbox;
+Mailbox_Handle g_humi_mailbox;
 
 int I2CInit(I2C_Params *I2CParams, I2C_Handle *I2CHandle)
 {
@@ -87,8 +93,13 @@ void PollingFxn(UArg arg0, UArg arg1)
     while(1) {
 
         PollingFunction(&I2CHandle, &I2CTransaction, &temp, &rh);
+        g_rhval = rh;
+
+
+        Mailbox_post(g_temp_mailbox, &temp, BIOS_NO_WAIT);
+        Mailbox_post(g_humi_mailbox, &rh, BIOS_NO_WAIT);
         /*TODO: Mailbox_send*/
-        Task_sleep(1000);
+        Task_sleep(POLLINTVALL*1000);
 
     }
 }
@@ -97,11 +108,16 @@ void PollingFxn(UArg arg0, UArg arg1)
 /*
  *  Setup task function
  */
-int setup_Poll_Task()
+int setup_Poll_Task(Mailbox_Handle temp_mailbox, Mailbox_Handle humi_mailbox)
 {
     Task_Params taskParams;
     Task_Handle taskHandle;
     Error_Block eb;
+
+     g_temp_mailbox = temp_mailbox;
+     g_humi_mailbox = humi_mailbox;
+
+
 
     Error_init(&eb);
     Task_Params_init(&taskParams);

@@ -1,5 +1,6 @@
 ﻿using ESE.SmartHome.Core.Db.EntityConfigurations;
 using ESE.SmartHome.Core.Devices;
+using ESE.SmartHome.Core.DeviceSettings;
 using ESE.SmartHome.Core.Measurements;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ namespace ESE.SmartHome.Core.Db
     public class SmartHomeDbContext : DbContext
     {
         public DbSet<Device> Devices { get; set; }
+        public DbSet<DeviceSetting> DeviceSettings { get; set; }
         public DbSet<Measurement> Measurements { get; set; }
 
         public SmartHomeDbContext(DbContextOptions options) : base(options)

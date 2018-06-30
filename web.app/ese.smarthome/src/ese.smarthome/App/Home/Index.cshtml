@@ -7,47 +7,70 @@
 }
 
 @section styles
-{
+    {
     <style>
         .card > a {
             position: absolute;
-            top: 0; left: 0;
-            height: 100%; width: 100%;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
         }
     </style>
 }
 
-<h2>My Home is my castle ...</h2>
+<section class="section">
+    <div class="container">
 
-<div class="row">
-    <div class="col-sm-3">
-        <div class="card bg-dark text-white">
-            <a asp-controller="Dashboard" asp-action="ViewDashboard"></a>
-            <div class="card-header"><i class="fa fa-calendar"> | Historie</i></div>
-            <div class="card-body">
-                @*<h5 class="card-title">Historische Daten</h5>*@
-                <p class="card-text">Periodische Messdaten ansehen.</p>
+        @*<div class="row" style="text-align: center;">
+            <div class="col mb-5">
+                 heading 
+                <hr />
+                <h2>My Home is my castle</h2>
+                <hr />
+            </div>
+        </div>*@
+
+        <div class="card-deck mb-3">
+            <div class="col-md-4 d-flex">
+                <div class="card mb-md-5">
+                    <img class="card-img-top img-fluid"
+                         src="/img/history-image.jpeg" alt="Historische daten image cap" />
+                    <div class="card-body d-flex flex-column">
+                        <h4 class="card-title">Historie</h4>
+                        <p class="card-text">Historische Messdaten anzeigen</p>
+                        <a class="btn btn-primary mt-auto" href="@Url.Action("ViewDashboard", "Dashboard")">View</a>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-md-4 d-flex">
+                <div class="card mb-md-5">
+                    <img class="card-img-top img-fluid"
+                         src="/img/realtime-image.jpeg" alt="Echtzeitdaten image cap" />
+                    <div class="card-body d-flex flex-column">
+                        <h4 class="card-title"><i class="fa fa-area-chart"> | Echtzeitdaten</i></h4>
+                        <p class="card-text">Echtzeitdaten anzeigen</p>
+                        <a class="btn btn-primary mt-auto" href="@Url.Action("Index", "RealtimeChart")">View</a>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-md-4 d-flex">
+                <div class="card mb-md-5">
+                    <img class="card-img-top img-fluid"
+                         src="/img/setup-image.jpg" alt="Devices image cap" />
+                    <div class="card-body d-flex flex-column">
+                        <h4 class="card-title">Sensoren</h4>
+                        <p class="card-text">Sensoren anzeigen, anlegen oder einstellen</p>
+                        <a class="btn btn-primary mt-auto" href="@Url.Action("ViewDevices", "Setup")">View</a>
+                    </div>
+                </div>
             </div>
         </div>
+
+
     </div>
-    <div class="col-sm-3">
-        <div class="card bg-dark text-white">
-            <a asp-controller="RealtimeChart" asp-action="Index"></a>
-            <div class="card-header"><i class="fa fa-area-chart"> | Echtzeitdaten</i></div>
-            <div class="card-body">
-                @*<h5 class="card-title">Daten in Echtzeit</h5>*@
-                <p class="card-text">Eingehende Messdaten in Echtzeit ansehen.</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-3">
-        <div class="card bg-dark text-white">
-            <a asp-controller="Home" asp-action="Index"></a>
-            <div class="card-header"><i class="fa fa-gears"> | Einstellungen</i></div>
-            <div class="card-body">
-                @*<h5 class="card-title">Sensoren einstellen</h5>*@
-                <p class="card-text">Einstellungen für Sensoren treffen.</p>
-            </div>
-        </div>
-    </div>
-</div>
+</section>

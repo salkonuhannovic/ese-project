@@ -14,16 +14,17 @@ namespace ESE.SmartHome.Core.Measurements
         Task<Measurement> GetByDeviceId(long deviceId);
 
         void Add(Measurement measurement);
+        Task UpdateAsync(Measurement measurement);
     }
 
     [UsedImplicitly]
     public class MeasurementRepository : IMeasurementRepository
     {
-        private readonly SmartHomeDbContext _context;
+        private readonly SmartHomeDbContext _dbContext;
 
-        public MeasurementRepository(SmartHomeDbContext context)
+        public MeasurementRepository(SmartHomeDbContext dbContext)
         {
-            _context = context;
+            _dbContext = dbContext;
         }
 
         public async Task<ICollection<Measurement>> GetAllForTodayAsync()
@@ -40,9 +41,15 @@ namespace ESE.SmartHome.Core.Measurements
 
         public void Add(Measurement measurement)
         {
-            _context.Measurements.Add(measurement);
+            _dbContext.Measurements.Add(measurement);
         }
 
-        private IQueryable<Measurement> Measurements => _context.Measurements;
+        public async Task UpdateAsync(Measurement measurement)
+        {
+            _dbContext.Measurements.Update(measurement);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        private IQueryable<Measurement> Measurements => _dbContext.Measurements;
     }
 }

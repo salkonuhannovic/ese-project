@@ -6,9 +6,16 @@
     Layout = "_Layout";
 }
 
-<h2 class="text-danger"><i class="fa fa-thermometer"></i> | Dashboard</h2>
+<section class="section">
+    <div class="container">
+        <hr/>
+        <h2><i class="fa fa-thermometer"></i> | Historische Daten</h2>
+        <hr />
 
-<canvas id="myChart" width="60" height="30"></canvas>
+        <canvas id="myChart" width="60" height="30"></canvas>
+
+    </div>
+</section>
 
 
 @section Scripts
@@ -50,7 +57,7 @@
                                 type: 'time',
                                 time: {
                                     displayFormats: {
-                                        'hour': 'HH:mm:ss'
+                                        'hour': 'HH:mm'
                                     }
                                 }
                             }

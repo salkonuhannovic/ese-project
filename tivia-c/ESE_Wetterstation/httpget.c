@@ -53,9 +53,7 @@
 
 /* Currently unused RTOS headers that are needed
  * for advanced features like IPC. */
-#include <ti/sysbios/knl/Semaphore.h>
-#include <ti/sysbios/knl/Mailbox.h>
-#include <ti/sysbios/knl/Event.h>
+
 #include <ti/sysbios/hal/Timer.h>
 
 /* Driverlib headers */
@@ -69,6 +67,8 @@
 #include <local_inc/UART_Task.h>
 #include <local_inc/HTUTask.h>
 #include <local_inc/Poll_Task.h>
+#include <local_inc/httpget.h>
+#include <local_inc/jsmn.h>
 
 #include <string.h>
 #include <stdio.h>
@@ -80,6 +80,7 @@
 /* TI-RTOS Header files */
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Task.h>
+#include <ti/sysbios/knl/Mailbox.h>
 #include <ti/drivers/GPIO.h>
 #include <ti/net/http/httpcli.h>
 
@@ -89,49 +90,77 @@
 #include <sys/socket.h>
 #include <driverlib/flash.h>
 
-//MOCK https://webhook.site/d6e1ab21-cb8e-4635-85f9-0046b7873f6b
 
-#define HOSTNAME          "webhook.site"
-#define REQUEST_URI       "/d6e1ab21-cb8e-4635-85f9-0046b7873f6b"
-#define CONFIG_URI       "/d6e1ab21-cb8e-4635-85f9-0046b7873f6b/"
-
-/*
-//OUR SERVICE
-#define HOSTNAME          "esesmarthome.azurewebsites.net"
-#define CONFIG_URI       "/setup/"
-#define REQUEST_URI       "/api/measurements"
-*/
-#define USER_AGENT        "HTTPCli (ARM; TI-RTOS)"
-#define CONTENT_TYPE      "application/json"
-#define HTTPTASKSTACKSIZE 4096
-//************************************************************************************************************GLOBALS
-static volatile char deviceID;
-static volatile char g_devicemac[18];
-//************************************************************************************************************PROTOTYPES
-void printError(char *errString, int code);
-int main(void);
-void netIPAddrHook(unsigned int IPAddr, unsigned int IfIdx, unsigned int fAdd);
-void getMacAddress(void);
-void httpTask(UArg arg0, UArg arg1);
-void HTTPPOSTTask(UArg arg0, UArg arg1);
-char* concat(const char *s1, const char *s2);
+Mailbox_Handle g_temp_mailbox;
+Mailbox_Handle g_humi_mailbox;
 //************************************************************************************************************FUNCTIONS
 
 /*TODOS
- * -Get devideID by HTTP GET - Use MAC as Identifier in CONFIG_URI
- * --Include MAC in HTTP GET Request autom.
- * --Extract assigned devideID out auf HTTP GET and store it
  * -Post Values periodically using HTTP POST including deviceID
- * --Get Values from Sensors
  * --Build JSON String autom.
  * --Include deviceID in POST Requests
- * -Updating Timesheet
  */
 
+void initTempBox(){
+    /*init Mailbox*/
+        Error_Block eb;
+        Mailbox_Params mailboxParams;
+        Mailbox_Params_init(&mailboxParams);
+        Error_init(&eb);
+        g_temp_mailbox = Mailbox_create(sizeof(float), 100, &mailboxParams, &eb);
+        if (g_temp_mailbox == NULL) {
+            System_abort("Mailbox create failed");
+        }
+
+}
+void initHumiBox(){
+    /*init Mailbox*/
+        Error_Block eb;
+        Mailbox_Params mailboxParams;
+        Mailbox_Params_init(&mailboxParams);
+        Error_init(&eb);
+        g_humi_mailbox = Mailbox_create(sizeof(float), 100, &mailboxParams, &eb);
+        if (g_humi_mailbox == NULL) {
+            System_abort("Mailbox create failed");
+        }
+
+}
 
 
-//Copied Posttask from xxx
-void HTTPPOSTTask(UArg arg0, UArg arg1)
+
+
+/*
+ *  ======== httpTask ========
+ *  Makes a HTTP GET request
+ */
+void httpTask(UArg arg0, UArg arg1)
+{
+    Task_sleep(POLLINTVALL*1000);
+    uint8_t debugger = 1;
+    if(doHttpGet()==0){//No ID received
+        System_printf("httpTask: No ID received. Aborting.");//POST
+        System_flush();
+       // BIOS_exit(1); //HANNES KOMMENTAR RAUSNEHMEN
+    }
+
+
+    while(1){
+        Task_sleep(POLLINTVALL*1000);
+        //POST
+        Mailbox_pend(g_temp_mailbox, (xdc_Ptr)&g_temperature, BIOS_WAIT_FOREVER);
+        Mailbox_pend(g_humi_mailbox, (float *) &g_rhval, BIOS_WAIT_FOREVER);
+        System_printf("Trying to POST: ID:%c temperature: %0.2f humidity: %f ROUND: %d\n", deviceID, g_temperature, g_rhval, debugger);
+        System_flush();
+        debugger++;
+        doHttpPost(&g_temperature,&g_rhval);
+
+
+    }
+
+}
+
+//Copied and edited Posttask from https://e2e.ti.com/support/embedded/tirtos/f/355/t/555614?HTTP-POST-sample
+int doHttpPost(float *temp, float *humid)
 {
     bool moreFlag = false;
     char data[128];
@@ -139,10 +168,12 @@ void HTTPPOSTTask(UArg arg0, UArg arg1)
     int len;
     char CONTENT_LENGTH[3];
     struct sockaddr_in addr;
-    char* try2 =concat("{\"deviceId\":", deviceID);
-    char* try = concat(try2, ",\"temperature\": 20,\"humidity\": 20}");
+    //char* try2 = concat("{\"deviceId\":", deviceID);
+    //char* try = concat(try2, ",\"temperature\": 20,\"humidity\": 20}");
+
+    snprintf(data, sizeof(data), "{\"deviceId\":%d,\"temperature\": %f,\"humidity\": %f}", deviceID, *temp, *humid);
     //Data to be sent
-    strcpy(data, try);
+    //strcpy(data, try); HANNES
 
     len = strlen(data);
     sprintf(CONTENT_LENGTH, "%d", len);
@@ -150,6 +181,7 @@ void HTTPPOSTTask(UArg arg0, UArg arg1)
     System_printf("\nData: %s\n", data);
     System_printf("len(int): %d\n", len);
     System_printf("CONTENT_LENGTH: %s\n", CONTENT_LENGTH);
+
 
     HTTPCli_Struct cli;
     HTTPCli_Field fields[3] = {
@@ -165,7 +197,7 @@ void HTTPPOSTTask(UArg arg0, UArg arg1)
 
     HTTPCli_setRequestFields(&cli, fields);
 
-    ret = HTTPCli_initSockAddr((struct sockaddr *)&addr, HOSTNAME, 0);
+    ret = HTTPCli_initSockAddr((struct sockaddr *)&addr, HOSTNAME, 0); //-106 failed to resolve Host Name
     if (ret < 0) {
         printError("POSTTask: address resolution failed", ret);
     }
@@ -175,7 +207,7 @@ void HTTPPOSTTask(UArg arg0, UArg arg1)
         printError("POSTTask: connect failed", ret);
     }
 
-//************************************************************************************************************SEND
+    //SEND
     ret = HTTPCli_sendRequest(&cli, HTTPStd_POST, REQUEST_URI, true);
     if (ret < 0) {
         printError("POSTTask: send failed", ret);
@@ -201,7 +233,7 @@ void HTTPPOSTTask(UArg arg0, UArg arg1)
     else {
         System_printf("Data sent successfully\n");
     }
-//************************************************************************************************************RECEIVE
+    //RECEIVE
 
     ret = HTTPCli_getResponseStatus(&cli);
     if (ret != HTTPStd_OK) {
@@ -231,25 +263,13 @@ void HTTPPOSTTask(UArg arg0, UArg arg1)
     System_printf("Received %d bytes of pay-load\n", len);
     System_flush();
 
-    free(try);
-    free(try2);
+    //free(try);
+    //free(try2);
     HTTPCli_disconnect(&cli);
     HTTPCli_destruct(&cli);
+    return 0;
 }
-//https://stackoverflow.com/questions/8465006/how-do-i-concatenate-two-strings-in-c
-char* concat(const char *s1, const char *s2)
-{
-    char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
-    // in real code you would check for errors in malloc here
-    strcpy(result, s1);
-    strcat(result, s2);
-    return result;
-}
-/*
- *  ======== httpTask ========
- *  Makes a HTTP GET request
- */
-void httpTask(UArg arg0, UArg arg1)
+int doHttpGet()
 {
     char* config = concat(CONFIG_URI,g_devicemac);
     bool moreFlag = false;
@@ -306,17 +326,20 @@ void httpTask(UArg arg0, UArg arg1)
         if (ret < 0) {
             printError("httpTask: response body processing failed", ret);
         }
+        //DEBUG
+        /**/
         if(ret>0){
-            deviceID = data[0];
-            System_printf("Recieved DeviceID: %c\n", data[0]);
+            deviceID = (int) (data[0]-'0');
+            System_printf("Received DeviceID: %c\n", data[0]);
             System_flush();
 
         }
 
+
         len += ret;
     } while (moreFlag);
 
-    System_printf("Recieved %d bytes of payload\n", len);
+    System_printf("Received %d bytes of Payload\n", len);
     System_flush();
 
     free(config);
@@ -324,25 +347,80 @@ void httpTask(UArg arg0, UArg arg1)
     HTTPCli_disconnect(&cli);
     HTTPCli_destruct(&cli);
 
-    //TEST
+    return deviceID;
+
+    }
+
+/*
+ *  ======== netIPAddrHook ========
+ *  This function is called when IP Addr is added/deleted
+ */
+void netIPAddrHook(unsigned int IPAddr, unsigned int IfIdx, unsigned int fAdd)
+{
     static Task_Handle taskHandle;
-        Task_Params taskParams;
-        Error_Block eb;
-    if(deviceID!=0){
+    Task_Params taskParams;
+    Error_Block eb;
+
+
+    getMacAddress();
+
+    /* Create a HTTP task when the IP address is added*/
+    if (fAdd && !taskHandle) {
         Error_init(&eb);
 
         Task_Params_init(&taskParams);
         taskParams.stackSize = HTTPTASKSTACKSIZE;
         taskParams.priority = 1;
-        //TODO: Add Posttask here
 
-        taskHandle = Task_create((Task_FuncPtr)HTTPPOSTTask, &taskParams, &eb);
+        taskHandle = Task_create((Task_FuncPtr)httpTask, &taskParams, &eb);
 
-     if (taskHandle == NULL) {
-         printError("netIPAddrHook: Failed to create HTTP Task\n", -1);
-     }
 
+        if (taskHandle == NULL) {
+            printError("netIPAddrHook: Failed to create HTTP Task\n", -1);
+        }
     }
+}
+
+
+/*
+ *  ======== main ========
+ */
+int main(void)
+{
+
+    /* Call board init functions */
+    Board_initGeneral();
+    Board_initGPIO();
+    Board_initEMAC();
+    Board_initI2C();
+
+    /* Turn on user LED */
+    GPIO_write(Board_LED0, Board_LED_ON);
+
+    deviceID=0;
+    initTempBox();
+    initHumiBox();
+
+    System_printf("Poll Task setup\n");
+    System_flush();
+    setup_Poll_Task(g_temp_mailbox, g_humi_mailbox); //HANNES
+
+    /* Start BIOS */
+    System_printf("Start BIOS\n");
+    System_flush();
+    /* Start BIOS */
+    BIOS_start();
+
+    return (0);
+}
+//Copied from: https://stackoverflow.com/questions/8465006/how-do-i-concatenate-two-strings-in-c
+char* concat(const char *s1, const char *s2)
+{
+    char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
+    // in real code you would check for errors in malloc here
+    strcpy(result, s1);
+    strcat(result, s2);
+    return result;
 }
 /*
  *  ======== getMacAddress ========
@@ -390,79 +468,6 @@ void getMacAddress(void)
       System_flush();
 
 
-}
-
-/*
- *  ======== netIPAddrHook ========
- *  This function is called when IP Addr is added/deleted
- */
-void netIPAddrHook(unsigned int IPAddr, unsigned int IfIdx, unsigned int fAdd)
-{
-    static Task_Handle taskHandle;
-    Task_Params taskParams;
-    Error_Block eb;
-
-
-    getMacAddress();
-
-    /* Create a HTTP task when the IP address is added */
-    if (fAdd && !taskHandle) {
-        Error_init(&eb);
-
-        Task_Params_init(&taskParams);
-        taskParams.stackSize = HTTPTASKSTACKSIZE;
-        taskParams.priority = 1;
-        //TODO: Add Posttask here
-        taskHandle = Task_create((Task_FuncPtr)httpTask, &taskParams, &eb);
-        //taskHandle = Task_create((Task_FuncPtr)HTTPPOSTTask, &taskParams, &eb);
-
-        if (taskHandle == NULL) {
-            printError("netIPAddrHook: Failed to create HTTP Task\n", -1);
-        }
-    }
-}
-
-/*
- *  ======== main ========
- */
-int main(void)
-{
-    /*EVA
-   /* uint32_t ui32SysClock;
-        ui32SysClock = Board_initGeneral(120000000);
-*/
-        //Init I2C
-        //Board_initGPIO();
-
-
-        /*TODO: Setup Mailboxes?*/
-        /*TODO: Setup UART*/
-
-
-
-    /* Call board init functions */
-    Board_initGeneral();
-    Board_initGPIO();
-    Board_initEMAC();
-Board_initI2C();
-
-    /* Turn on user LED */
-    GPIO_write(Board_LED0, Board_LED_ON);
-    deviceID=0;
-    System_printf("Starting the HTTP POST Code\n");
-
-    /* SysMin will only print to the console when you call flush or exit */
-    System_flush();
- System_printf("Poll Task setup\n");
-        setup_Poll_Task();
-
-        /* Start BIOS */
-        System_printf("Start BIOS\n");
-        System_flush();
-    /* Start BIOS */
-    BIOS_start();
-
-    return (0);
 }
 /*
  *  ======== printError ========

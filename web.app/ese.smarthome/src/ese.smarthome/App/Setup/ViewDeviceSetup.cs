@@ -27,7 +27,7 @@ namespace ESE.SmartHome.App.Setup
 
             protected override async Task<QueryResult> HandleCore(Query request)
             {
-                var dbResult = await _unitOfWork.Devices.GetAllActiveDevices();
+                var dbResult = await _unitOfWork.Devices.GetAllDevices();
 
                 var queryResult = new QueryResult
                 {

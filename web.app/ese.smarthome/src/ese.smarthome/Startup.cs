@@ -75,8 +75,7 @@ namespace ESE.SmartHome
                 c.IncludeXmlComments(xmlPath);
             });
         }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILogger<Startup> logger, SmartHomeDbContext dbContext)
         {
             if (env.IsDevelopment())
