@@ -1,7 +1,7 @@
 /*
  *  ======== Poll_Task.c ========
  *  Author: Michael Kramer / Matthias Wenzl
- *  Eva Gergely
+ *  Adjusted by: Hannes Aurednik, Eva Gergely, Stephan Nöhrer, Salko Nuhanovic
  */
 #include <stdbool.h>
 #include <stdint.h>
@@ -18,6 +18,7 @@
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Task.h>
 #include <ti/sysbios/knl/Mailbox.h>
+
 /* Driverlib headers */
 #include <driverlib/gpio.h>
 
@@ -44,7 +45,7 @@ int I2CInit(I2C_Params *I2CParams, I2C_Handle *I2CHandle)
     *I2CHandle = I2C_open(EK_TM4C1294XL_I2C7, I2CParams);
 
     if (*I2CHandle == NULL) {
-        System_printf("I2C_open() failed.\n"); //System_abort
+        System_printf("I2C_open() failed.\n"); //error
         return 1;
     } else {
         System_printf("I2C_open() successful.\n");
@@ -59,8 +60,6 @@ void PollingFunction(I2C_Handle *I2CHandle, I2C_Transaction *I2CTransaction, flo
     *temperature = GetTemperature(I2CHandle, I2CTransaction);
 
     *rhval = GetRelativeHumidity(I2CHandle, I2CTransaction);
-
-    /*TODO: rh und taupunkt*/
 
 }
 
@@ -79,13 +78,8 @@ void PollingFxn(UArg arg0, UArg arg1)
             System_abort("I2C could not be initialized in Fxn.\n");
         }
 
-    HTU21DSoftreset(&I2CHandle, &I2CTransaction);
+    HTU21DSoftreset(&I2CHandle, &I2CTransaction); //initial SoftReset as recommended in manual
 
-        /* Manual p. 13:
-         * The content of user register is described in the table below.
-         * Reserved bits must not be changed and default values of respective reserved
-         * bits may change over time without prior notice. Therefore, for any writing
-         * to user register, default values of reserved bits must be read first.*/
     HTU21D_REG_read(&I2CHandle, &I2CTransaction);
     HTU21D_REG_write(&I2CHandle, &I2CTransaction);
     HTU21D_REG_read(&I2CHandle, &I2CTransaction);
@@ -98,7 +92,7 @@ void PollingFxn(UArg arg0, UArg arg1)
 
         Mailbox_post(g_temp_mailbox, &temp, BIOS_NO_WAIT);
         Mailbox_post(g_humi_mailbox, &rh, BIOS_NO_WAIT);
-        /*TODO: Mailbox_send*/
+
         Task_sleep(POLLINTVALL*1000);
 
     }
@@ -117,12 +111,10 @@ int setup_Poll_Task(Mailbox_Handle temp_mailbox, Mailbox_Handle humi_mailbox)
      g_temp_mailbox = temp_mailbox;
      g_humi_mailbox = humi_mailbox;
 
-
-
     Error_init(&eb);
     Task_Params_init(&taskParams);
 
-    taskParams.stackSize = 1024; /* stack in bytes - sollte hier ein größerer wert wie zb 2048 gewählt werden? */
+    taskParams.stackSize = 1024; /* stack in bytes */
     taskParams.priority = 15; /* 0-15 (15 is highest priority on default -> see RTOS Task configuration) */
 
     taskHandle = Task_create((Task_FuncPtr)PollingFxn, &taskParams, &eb);
