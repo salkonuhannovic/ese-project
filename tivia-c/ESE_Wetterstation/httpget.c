@@ -136,7 +136,7 @@ void initHumiBox(){
 void httpTask(UArg arg0, UArg arg1)
 {
     Task_sleep(POLLINTVALL*1000);
-
+    uint8_t debugger = 1;
     if(doHttpGet()==0){//No ID received
         System_printf("httpTask: No ID received. Aborting.");//POST
         System_flush();
@@ -149,9 +149,10 @@ void httpTask(UArg arg0, UArg arg1)
         //POST
         Mailbox_pend(g_temp_mailbox, (xdc_Ptr)&g_temperature, BIOS_WAIT_FOREVER);
         Mailbox_pend(g_humi_mailbox, (float *) &g_rhval, BIOS_WAIT_FOREVER);
-        System_printf("Trying to POST: ID:%c temperature: %0.2f humidity: %f\n", deviceID, g_temperature, g_rhval);
+        System_printf("Trying to POST: ID:%c temperature: %0.2f humidity: %f ROUND: %d\n", deviceID, g_temperature, g_rhval, debugger);
         System_flush();
-        doHttpPost(g_temperature,g_rhval);
+        debugger++;
+        doHttpPost(&g_temperature,&g_rhval);
 
 
     }
@@ -159,7 +160,7 @@ void httpTask(UArg arg0, UArg arg1)
 }
 
 //Copied and edited Posttask from https://e2e.ti.com/support/embedded/tirtos/f/355/t/555614?HTTP-POST-sample
-int doHttpPost(float temp, float humid)
+int doHttpPost(float *temp, float *humid)
 {
     bool moreFlag = false;
     char data[128];
@@ -167,10 +168,10 @@ int doHttpPost(float temp, float humid)
     int len;
     char CONTENT_LENGTH[3];
     struct sockaddr_in addr;
-    char* try2 = concat("{\"deviceId\":", deviceID);
-    char* try = concat(try2, ",\"temperature\": 20,\"humidity\": 20}");
+    //char* try2 = concat("{\"deviceId\":", deviceID);
+    //char* try = concat(try2, ",\"temperature\": 20,\"humidity\": 20}");
 
-    snprintf(data, sizeof(data), "{\"deviceId\":%d,\"temperature\": %f,\"humidity\": %f}", deviceID, temp, humid);
+    snprintf(data, sizeof(data), "{\"deviceId\":%d,\"temperature\": %f,\"humidity\": %f}", deviceID, *temp, *humid);
     //Data to be sent
     //strcpy(data, try); HANNES
 
@@ -262,8 +263,8 @@ int doHttpPost(float temp, float humid)
     System_printf("Received %d bytes of pay-load\n", len);
     System_flush();
 
-    free(try);
-    free(try2);
+    //free(try);
+    //free(try2);
     HTTPCli_disconnect(&cli);
     HTTPCli_destruct(&cli);
     return 0;
@@ -326,13 +327,14 @@ int doHttpGet()
             printError("httpTask: response body processing failed", ret);
         }
         //DEBUG
-        /*if(ret>0){
-            deviceID = (int) data[0];
+        /**/
+        if(ret>0){
+            deviceID = (int) (data[0]-'0');
             System_printf("Received DeviceID: %c\n", data[0]);
             System_flush();
 
-        }*/
-        deviceID = 3;
+        }
+
 
         len += ret;
     } while (moreFlag);
@@ -369,9 +371,9 @@ void netIPAddrHook(unsigned int IPAddr, unsigned int IfIdx, unsigned int fAdd)
         Task_Params_init(&taskParams);
         taskParams.stackSize = HTTPTASKSTACKSIZE;
         taskParams.priority = 1;
-        //TODO: Add Posttask here
+
         taskHandle = Task_create((Task_FuncPtr)httpTask, &taskParams, &eb);
-        //taskHandle = Task_create((Task_FuncPtr)HTTPPOSTTask, &taskParams, &eb);
+
 
         if (taskHandle == NULL) {
             printError("netIPAddrHook: Failed to create HTTP Task\n", -1);
