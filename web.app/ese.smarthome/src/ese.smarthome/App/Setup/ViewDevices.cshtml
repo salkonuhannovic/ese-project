@@ -6,15 +6,37 @@
     Layout = "_Layout";
 }
 
-<section>
+<link href="~/css/vendor/bootstrap-toggle.min.css" rel="stylesheet" />
+
+<section class="section">
     <div class="container">
+
+
+        @if (TempData.ContainsKey("TempMessage"))
+        {
+            <div class="alert alert-info fade show">
+                <i class="fa fa-check"></i> @TempData["TempMessage"]
+            </div>
+        }
+
+        <div class="mb-2" style="float: right;">
+            <button class="btn btn-primary"
+                    data-toggle="modal"
+                    data-target="#add-device"
+                    data-url="@Url.Action("AddDevice", "Setup", new AddDevice.Command())">
+                <i class="fa fa-fw fa-plus"></i> Add Device
+            </button>
+        </div>
 
         <table class="table table-hover">
             <thead>
                 <tr>
                     <th scope="col">#</th>
                     <th scope="col">Identifier</th>
+                    <th scope="col">MAC Address</th>
                     <th scope="col">Created</th>
+                    <th scope="col">Active</th>
+                    <th colspan="2"></th>
                 </tr>
             </thead>
             <tbody>
@@ -24,7 +46,34 @@
                     <tr>
                         <th scope="row">@(d.Id)</th>
                         <td>@(d.Name)</td>
+                        <td>@(d.Setting.MacAddress.ToLowerInvariant())</td>
                         <td>@(d.Created.ToShortDateString())</td>
+                        <td>
+                            @if (d.IsActive)
+                            {
+                                <div class="text-success">Active</div>
+                            }
+                            else
+                            {
+                                <div class="text-danger">Not Active</div>
+                            }
+                        </td>
+                        <td>
+                            <a data-toggle="modal"
+                               data-target="#add-device"
+                               data-url="@Url.Action("EditDevice", "Setup", new EditDevice.Query {DeviceId = d.Id})"
+                               href="unused">
+                                | <i class="fa fa-fw fa-wrench"></i> Edit
+                            </a>
+                        </td>
+                        <td>
+                            <a data-toggle="modal"
+                               data-target="#add-device"
+                               data-url="@Url.Action("DeleteDevice", "Setup", new DeleteDevice.Query {DeviceId = d.Id})"
+                               href="unused">
+                                | <i class="fa fa-fw fa-trash"></i> Delete
+                            </a>
+                        </td>
                     </tr>
                 }
 
@@ -32,3 +81,56 @@
         </table>
     </div>
 </section>
+
+@* device action modal *@
+<div class="modal fade" tabindex="-1" role="dialog" id="add-device">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            @* Filled by ajax call *@
+        </div>
+    </div>
+</div>
+
+@section Scripts
+    {
+    <script>
+
+        $(function() {
+
+            $('#add-device').on('show.bs.modal',
+                function(e) {
+                    if (e.namespace !== 'bs.modal') return; // Fix for weird toggle behaviour
+                    var button = $(e.relatedTarget);
+                    var url = button.data('url');
+
+                    var modal = $(this);
+
+                    modal.find('.modal-content')
+                        .html(
+                            '<div class="modal-body"><p>Loading...</p><div class="progress"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div></div></div>');
+
+                    $.ajax(url, { dataType: 'html' })
+                        .done(function(partialView) {
+                            modal.find('.modal-content').html(partialView);
+
+                            $("[data-toggle='toggle']").bootstrapToggle('destroy');
+                            $("[data-toggle='toggle']").bootstrapToggle();
+
+                            var form = modal.find('form');
+                            form.removeData('validator');
+                            form.removeData('unobtrusiveValidation');
+                            $.validator.unobtrusive.parse(form);
+                        })
+                        .fail(function() {
+                            @*window.location = '@Url.Action("Error", "Errors")';*@
+                        });
+                });
+
+            $('#add-device').on('shown.bs.modal',
+                function() {
+                    $(this).find('select, text, input[type="text"]').first().trigger('focus');
+                });
+        })
+
+    </script>
+}

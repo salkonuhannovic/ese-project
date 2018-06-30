@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ESE.SmartHome.Api.Shared;
 using ESE.SmartHome.Core.Data;
-using ESE.SmartHome.Core.Devices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,7 +22,7 @@ namespace ESE.SmartHome.Api.Alexa
         }
 
         /// <summary>
-        /// Get all devices
+        /// Get all active devices
         /// </summary>
         /// <remarks>
         /// Only active devices are returned.
@@ -30,9 +30,14 @@ namespace ESE.SmartHome.Api.Alexa
         /// <returns>All active devices</returns>
         [HttpGet("devices")]
         [ProducesResponseType(typeof(ICollection<DeviceDto>), 200)]
-        public async Task<IActionResult> GetAllDevices()
+        public async Task<IActionResult> GetActiveDevices()
         {
             var devices = await _unitOfWork.Devices.GetAllActiveDevices();
+
+            if (!devices.Any())
+            {
+                return NotFound();
+            }
 
             var dtos = devices.Select(d => new DeviceDto { DeviceId = d.Id, Name = d.Name }).ToList();
 
@@ -47,24 +52,24 @@ namespace ESE.SmartHome.Api.Alexa
         /// </remarks>
         /// <param name="deviceId"></param>
         /// <returns>Measurement if successful</returns>
-        /// <response code="404">No device with given id found.</response>
-        [HttpPost("measurements")]
+        /// <response code="204">No measurments for device with given id found.</response>
+        [HttpGet("measurements/{deviceId}")]
         [ProducesResponseType(typeof(MeasurementDto), 200)]
-        public async Task<IActionResult> GetMeasurmentsByDeviceId([FromBody] long deviceId)
+        public async Task<IActionResult> GetMeasurmentsByDeviceId(long deviceId)
         {
             var measurment = await _unitOfWork.Measurements.GetByDeviceId(deviceId);
 
             if (measurment == null)
             {
-                return NotFound();
+                return NoContent();
             }
 
             var dto = new MeasurementDto
             {
                 DeviceId = measurment.DeviceId,
                 Timestamp = measurment.Timestamp,
-                Temperature = measurment.Temperature,
-                Humidity = measurment.Humidity
+                Temperature = Math.Truncate(measurment.Temperature * 100) / 100,
+                Humidity = Math.Round(measurment.Humidity)
             };
 
             return Ok(dto);

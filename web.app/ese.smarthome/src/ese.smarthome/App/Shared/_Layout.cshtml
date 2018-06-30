@@ -7,53 +7,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
     <title>@ViewData["Title"] | ESE SmartHome</title>
 
-    <link href="~/css/vendor/bootstrap.css" rel="stylesheet" />
+    <link rel="icon" type="image/ico" href="~/favicon-32x32.ico" sizes="32x32">
+    <link rel="icon" type="image/ico" href="~/favicon-16x16.ico" sizes="16x16">
+
+    <link href="~/css/smarthome-bootstrap-theme.css" rel="stylesheet" />
     <link href="~/css/vendor/bootstrap-datepicker.css" rel="stylesheet" />
     <link href="~/css/vendor/font-awesome.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700&amp;subset=latin-ext" rel="stylesheet">
-    <link href="~/css/site.css" rel="stylesheet" />
+    <link async href="http://fonts.googleapis.com/css?family=Monoton" rel="stylesheet" type="text/css" />
 
     @RenderSection("styles", false)
 </head>
-<body>
+<body data-spy="scroll" data-offset="71" data-target=".navbar">
 
-    @* left menu *@
 
-    <nav class="sidebar bg-dark">
-        <div style="background: #2c3035; height: 70px;" class="d-flex justify-content-center align-items-center">
-            <div style="width: 40px; margin-left: -0.4rem;">
-                <img class="img-fluid" src="/img/fh_logo_300x160.png" alt="FH Logo" />
-            </div>
-            <div style="font-size: 1.4rem; padding-left: 0.4rem; color: #d6d6d6;">SmartHome</div>
-        </div>
+    @* top menu *@
+    <nav class="navbar navbar-expand-lg fixed-top navbar-light">
+        <nav class="container">
 
-        <nav class="nav flex-column">
-            <a class="nav-link" asp-controller="Home" asp-action="Index">
-                <i class="fa fa-fw fa-home"></i>Home
-            </a>
-            <a class="nav-link" asp-controller="Dashboard" asp-action="ViewDashboard">
-                <i class="fa fa-fw fa-calendar"></i>Dashboard
-            </a>
-            <a class="nav-link" asp-controller="RealtimeChart" asp-action="Index">
-                <i class="fa fa-fw fa-area-chart"></i>Echtzeitdaten
-            </a>
-            <a class="nav-link" asp-controller="Setup" asp-action="ViewDevices">
-                <i class="fa fa-fw fa-cogs"></i>Settings
-            </a>
+            <a class="navbar-brand d-lg-none" asp-controller="Home" asp-action="Index">ESE SmartHome</a>
+
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent"
+                    aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navbar: Collapse -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+
+                <!-- Brand name -->
+                <a class="navbar-brand d-none d-lg-flex" asp-controller="Home" asp-action="Index">
+                    ESE SmartHome
+                </a>
+
+                <!-- Navbar navigation: Right -->
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Setup" asp-action="ViewDevices">Setup</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Dashboard" asp-action="ViewDashboard">Historische Daten</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="RealtimeChart" asp-action="Index">Echtzeitdaten</a>
+                    </li>
+                </ul>
+
+            </div> <!-- / .navbar-collapse -->
         </nav>
+    </nav>
 
-        @{
+    <!-- section_header -->
+    <section class="section section_minimal" data-parallax="scroll" data-image-src="/img/night-sky.jpeg">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <h1 class="section__heading section_header__heading text-center">SmartHome</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @*@{
             var version = typeof(Startup).Assembly
                                          .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                                          .InformationalVersion;
         }
-        <span id="version">V@(version)</span>
-    </nav>
-    <div class="page">
-        <div class="container" style="padding-top: 70px;">
-            @RenderBody()
-        </div>
+        <span id="version">V@(version)</span>*@
+
+    <div>
+        @RenderBody()
     </div>
+
+    <footer class="section section_footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6">
+
+                    <h5 class="section_footer__heading">
+                        smarthome
+                    </h5>
+                    <p>
+                        Your Home - Your weather!
+                    </p>
+
+                </div>
+                <div class="col-sm-6">
+
+                    <!-- contact info -->
+                    <h5 class="section_footer__heading">
+                        support info
+                    </h5>
+                    <ul class="section_footer__info">
+                        <li>
+                            <i class="fa fa-phone"></i> +1 42 42 42 1337
+                        </li>
+                        <li>
+                            <i class="fa fa-envelope-o"></i> <a href="mailto:ese.smarthome@example.com">ese.smarthome@example.com</a>
+                        </li>
+                    </ul>
+
+                </div>
+
+            </div> <!-- / .row -->
+
+        </div> <!-- / .container -->
+    </footer>
 
 
     <script src="~/js/vendor/jquery.js"></script>
@@ -61,10 +119,13 @@
     <script src="~/js/vendor/jquery.validate.unobtrusive.js"></script>
     <script src="~/js/vendor/popper.js"></script>
     <script src="~/js/vendor/bootstrap.js"></script>
+    <script src="~/js/vendor/bootstrap-toggle.min.js"></script>
     <script src="~/js/vendor/bootstrap-datepicker.js"></script>
     <script src="~/js/vendor/bootstrap-datepicker.de.min.js"></script>
     <script src="~/js/vendor/Chart.bundle.min.js"></script>
     <script src="~/js/vendor/signalr-client-1.0.0-alpha2-final.js"></script>
+    <script src="~/js/vendor/parallax.min.js"></script>
+    <script src="~/js/ese.smarthome.js"></script>
 
     @RenderSection("Scripts", required: false)
 </body>

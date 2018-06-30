@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using ESE.SmartHome.Api.Shared;
 using ESE.SmartHome.App.Hubs;
 using ESE.SmartHome.Core.Data;
 using ESE.SmartHome.Core.Measurements;
@@ -21,10 +23,25 @@ namespace ESE.SmartHome.Api.Sensors
         }
 
         [HttpGet("/setup/{mac}")]
-        public IActionResult GetDeviceId(string mac)
+        public async Task<IActionResult> GetDeviceId(string mac)
         {
-            //Todo check if mac address exists
-            return Ok(3);
+            if (string.IsNullOrWhiteSpace(mac))
+            {
+                return BadRequest();
+            }
+
+            var devices = await _unitOfWork.Devices.GetAllActiveDevices();
+            var deviceId =
+                devices.Where(d => d.Setting.MacAddress.ToLowerInvariant().Equals(mac.ToLowerInvariant())).ToList();
+            
+            if (!deviceId.Any())
+            {
+                return NotFound();
+            }
+
+            var id = deviceId.Select(d => d.Id);
+
+            return Ok(id);
         }
 
         /// <summary>
@@ -41,13 +58,24 @@ namespace ESE.SmartHome.Api.Sensors
             {
                 DeviceId = dto.DeviceId,
                 Temperature = dto.Temperature,
-                Humidity = dto.Humidity
+                Humidity = dto.Humidity,
+                Timestamp = DateTime.Today
             };
 
-            _unitOfWork.Measurements.Add(measurement);
-            _unitOfWork.Save();
+            var m = await _unitOfWork.Measurements.GetByDeviceId(dto.DeviceId);
+            if (m == null)
+            {
+                _unitOfWork.Measurements.Add(measurement);
+                _unitOfWork.Save();
+            }
+            else
+            {
+                m.Temperature = dto.Temperature;
+                m.Humidity = dto.Humidity;
+                m.Timestamp = DateTime.Today;
 
-            //var measurement = new Measurement {Timestamp = dto.Timestamp, Temperature = dto.Temperature};
+                await _unitOfWork.Measurements.UpdateAsync(m);
+            }
 
             await _hubContext.Clients.All.InvokeAsync("Broadcast", "Sensor", measurement);
 

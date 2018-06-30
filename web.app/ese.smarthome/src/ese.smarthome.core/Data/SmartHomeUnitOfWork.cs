@@ -1,4 +1,5 @@
-﻿using ESE.SmartHome.Core.Db;
+﻿using System.Threading.Tasks;
+using ESE.SmartHome.Core.Db;
 using ESE.SmartHome.Core.Devices;
 using ESE.SmartHome.Core.Measurements;
 using JetBrains.Annotations;
@@ -11,6 +12,7 @@ namespace ESE.SmartHome.Core.Data
         IMeasurementRepository Measurements { get; }
 
         void Save();
+        Task<int> SaveAsync();
     }
 
     [UsedImplicitly]
@@ -33,5 +35,7 @@ namespace ESE.SmartHome.Core.Data
         {
             _dbContext.SaveChanges();
         }
+
+        public async Task<int> SaveAsync() => await _dbContext.SaveChangesAsync();
     }
 }

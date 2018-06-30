@@ -6,7 +6,7 @@ All commands are to be excuted in *Package Manager Console* inside Visual Studio
 
 **Remove migration**
 
-    Remove-Migration <MigrationName> -Project ese.smarthome.core -StartupProject ese.smarthome
+    Remove-Migration -Project ese.smarthome.core -StartupProject ese.smarthome
 
 **Drop database**
 

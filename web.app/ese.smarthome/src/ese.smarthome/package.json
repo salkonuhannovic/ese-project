@@ -13,7 +13,7 @@
         "run-sequence": "2.2.0"
     },
     "dependencies": {
-        "bootstrap": "4.0.0",
+        "bootstrap": "^4.0.0",
         "font-awesome": "4.7.0",
         "jquery": "3.2.1",
         "jquery-validation": "1.17.0",
@@ -21,6 +21,8 @@
         "popper.js": "1.13.0",
         "bootstrap-datepicker": "1.7.1",
         "chart.js": "2.7.2",
-        "@aspnet/signalr-client": "1.0.0-alpha2-final"
+        "@aspnet/signalr-client": "1.0.0-alpha2-final",
+        "jquery-parallax.js": "1.5.0",
+        "bootstrap-toggle": "2.2.2"
     }
 }

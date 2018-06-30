@@ -1,0 +1,28 @@
+﻿@using ESE.SmartHome.App.Setup
+@model DeleteDevice.Command
+
+<div class="modal-header">
+    <h5 class="modal-title">Device löschen</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div class="modal-body">
+    <div class="alert alert-danger">
+        <div class="row">
+            <div class="col-1"><i class="fa fa-warning"></i></div>
+            <div class="col">
+                Sensor <strong>Name @Model.Name</strong> wird gelöscht.<br /> Sind Sie sicher?
+            </div>
+        </div>
+    </div>
+    <form asp-action="DeleteDevice" asp-controller="Setup" method="post" id="delete-form">
+        <input type="hidden" asp-for="DeviceId" />
+
+    </form>
+</div>
+<div class="modal-footer">
+    <button form="delete-form" type="submit" class="btn btn-sm btn-outline-primary"><i class="fa fa-check"></i> Device löschen</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal"><i class="fa fa-times"></i> Abbrechen</button>
+</div>

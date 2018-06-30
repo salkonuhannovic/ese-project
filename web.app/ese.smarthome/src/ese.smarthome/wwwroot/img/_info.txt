@@ -1,0 +1,6 @@
+All images are from Pexels and licensed under Creative Commons Zero (CC0)
+	https://www.pexels.com/
+
+compressed with
+	http://compressimage.toolur.com/
+using method A and image quality 60% without resizing and normal compression type

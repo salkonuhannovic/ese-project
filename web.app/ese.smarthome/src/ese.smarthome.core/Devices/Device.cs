@@ -12,7 +12,7 @@ namespace ESE.SmartHome.Core.Devices
         public DateTime Created { get; set; }
         public bool IsActive { get; set; }
 
-        public DeviceSetting Setting { get; set; }
+        public DeviceSetting Setting { get; set; } = new DeviceSetting();
         public IList<Measurement> Measurements { get; set; }
     }
 }
