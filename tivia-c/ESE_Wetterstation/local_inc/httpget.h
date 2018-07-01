@@ -1,5 +1,16 @@
-/*
- * httpget.h
+ /**
+ * @file httpget.h
+ * Embedded Systems Engineering
+ *
+ * Starts an HTTP Task after an IP-Address is received per DHCP
+ * Uses HTTP POST to send temperature and humidity values to a defined server
+ * Values to be sent are received through mailbox
+ *
+ *
+ * @author Hannes Aurednik <ic15b004@technikum-wien.at>
+ * @date 2018/07/01
+ *
+ * @version 1.1
  *
  *
  */
@@ -8,63 +19,12 @@
 #define LOCAL_INC_HTTPGET_H_
 
 
-
 #include <stdbool.h>
 #include <stdint.h>
-#include <inc/hw_memmap.h>
 
-/* XDCtools Header files */
-#include <xdc/std.h>
-#include <xdc/cfg/global.h>
-#include <xdc/runtime/System.h>
-#include <xdc/runtime/Error.h>
-#include <xdc/runtime/Memory.h>
-
-/* BIOS Header files */
-#include <ti/sysbios/BIOS.h>
-#include <ti/sysbios/knl/Task.h>
-#include <ti/drivers/I2C.h>
-
-/* Currently unused RTOS headers that are needed
- * for advanced features like IPC. */
-#include <ti/sysbios/knl/Semaphore.h>
-#include <ti/sysbios/knl/Mailbox.h>
-#include <ti/sysbios/knl/Event.h>
-#include <ti/sysbios/hal/Timer.h>
-
-/* Driverlib headers */
-#include <driverlib/gpio.h>
-
-/* Board Header files */
-#include <Board.h>
-#include <EK_TM4C1294XL.h>
-
-/* Application headers */
-#include <local_inc/UART_Task.h>
-#include <local_inc/HTUTask.h>
-#include <local_inc/Poll_Task.h>
-
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-/* XDCtools Header files */
-#include <xdc/runtime/Error.h>
-#include <xdc/runtime/System.h>
-
-/* TI-RTOS Header files */
-#include <ti/sysbios/BIOS.h>
-#include <ti/sysbios/knl/Task.h>
-#include <ti/drivers/GPIO.h>
-#include <ti/net/http/httpcli.h>
-
-/* Example/Board Header file */
-#include "Board.h"
-
-#include <sys/socket.h>
-#include <driverlib/flash.h>
 //************************************************************************************************************DEFINES
 
-/*MOCK Example https://webhook.site/d6e1ab21-cb8e-4635-85f9-0046b7873f6b
+/*MOCK - Example https://webhook.site/d6e1ab21-cb8e-4635-85f9-0046b7873f6b
 #define HOSTNAME          "webhook.site"
 #define REQUEST_URI       "/d6e1ab21-cb8e-4635-85f9-0046b7873f6b"
 #define CONFIG_URI       "/d6e1ab21-cb8e-4635-85f9-0046b7873f6b/"
@@ -80,7 +40,7 @@
 
 #define POLLINTVALL 20 //Polling Interval in Seconds
 
-//#define DEBUG
+#define DEBUG
 
 //************************************************************************************************************GLOBALS
 
@@ -97,7 +57,6 @@ void getMacAddress(void);
 void httpTask(UArg arg0, UArg arg1);
 int doHttpPost(volatile float *temp,volatile float *humid);
 char* concat(const char *s1, const char *s2);
-
 int doHttpGet();
 
 

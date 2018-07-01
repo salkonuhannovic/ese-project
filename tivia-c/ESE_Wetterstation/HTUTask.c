@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 #include <inc/hw_memmap.h>
 
 /* XDCtools Header files */

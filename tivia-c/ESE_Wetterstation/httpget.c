@@ -1,4 +1,17 @@
-
+ /**
+ * @file httpget.c
+ * Embedded Systems Engineering
+ *
+ * Code is based on TI-RTOS HTTP GET Example
+ *
+ *
+ * @author Hannes Aurednik <ic15b004@technikum-wien.at>
+ * @date 2018/07/01
+ *
+ * @version 1.1
+ *
+ *
+ */
 
 /*
  * Copyright (c) 2015-2016, Texas Instruments Incorporated
@@ -39,7 +52,11 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <inc/hw_memmap.h>
+#include <sys/socket.h>
 
 /* XDCtools Header files */
 #include <xdc/std.h>
@@ -48,18 +65,18 @@
 #include <xdc/runtime/Error.h>
 #include <xdc/runtime/Memory.h>
 
-/* BIOS Header files */
+/* TI-RTOS Header files */
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Task.h>
-#include <ti/drivers/I2C.h>
-
-/* Currently unused RTOS headers that are needed
- * for advanced features like IPC. */
-
+#include <ti/sysbios/knl/Mailbox.h>
 #include <ti/sysbios/hal/Timer.h>
+#include <ti/drivers/I2C.h>
+#include <ti/drivers/GPIO.h>
+#include <ti/net/http/httpcli.h>
 
 /* Driverlib headers */
 #include <driverlib/gpio.h>
+#include <driverlib/flash.h>
 
 /* Board Header files */
 #include <Board.h>
@@ -70,31 +87,12 @@
 #include <local_inc/HTUTask.h>
 #include <local_inc/Poll_Task.h>
 #include <local_inc/httpget.h>
-#include <local_inc/jsmn.h>
+// #include <local_inc/jsmn.h> //not used
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-/* XDCtools Header files */
-#include <xdc/runtime/Error.h>
-#include <xdc/runtime/System.h>
-
-/* TI-RTOS Header files */
-#include <ti/sysbios/BIOS.h>
-#include <ti/sysbios/knl/Task.h>
-#include <ti/sysbios/knl/Mailbox.h>
-#include <ti/drivers/GPIO.h>
-#include <ti/net/http/httpcli.h>
-
-/* Example/Board Header file */
-#include "Board.h"
-
-#include <sys/socket.h>
-#include <driverlib/flash.h>
-
-
+//************************************************************************************************************GLOBALS
 Mailbox_Handle g_temp_mailbox;
 Mailbox_Handle g_humi_mailbox;
+
 //************************************************************************************************************FUNCTIONS
 
 
@@ -136,7 +134,8 @@ void initHumiBox(){
 
 /*
  *  ======== httpTask ========
- *  Makes a HTTP GET request
+ *  DeviceID GET
+ *  Value POST
  */
 void httpTask(UArg arg0, UArg arg1)
 {
@@ -168,8 +167,11 @@ void httpTask(UArg arg0, UArg arg1)
     }
 
 }
-
-//Copied and edited Posttask from https://e2e.ti.com/support/embedded/tirtos/f/355/t/555614?HTTP-POST-sample
+/*
+ *  ======== doHttpPost ========
+ *  HTTP POST Request
+ *  POSTs temperature and humidity to the server
+ */
 int doHttpPost(volatile float *temp,volatile float *humid)
 {
     bool moreFlag = false;
@@ -185,11 +187,11 @@ int doHttpPost(volatile float *temp,volatile float *humid)
 
     len = strlen(data);
     sprintf(CONTENT_LENGTH, "%d", len);
-
+    #ifdef DEBUG
     System_printf("\nData: %s\n", data);
     System_printf("len(int): %d\n", len);
     System_printf("CONTENT_LENGTH: %s\n", CONTENT_LENGTH);
-
+    #endif
 
     HTTPCli_Struct cli;
     HTTPCli_Field fields[3] = {
@@ -197,10 +199,10 @@ int doHttpPost(volatile float *temp,volatile float *humid)
         { HTTPStd_FIELD_NAME_USER_AGENT, USER_AGENT },
         { NULL, NULL }
     };
-
+    #ifdef DEBUG
     System_printf("Sending a HTTP POST request to '%s'\n", HOSTNAME);
     System_flush();
-
+    #endif
     HTTPCli_construct(&cli);
 
     HTTPCli_setRequestFields(&cli, fields);
@@ -222,6 +224,7 @@ int doHttpPost(volatile float *temp,volatile float *humid)
     }
     else {
         System_printf("sendRequest successful\n");
+        System_flush();
     }
 
     ret = HTTPCli_sendField(&cli, HTTPStd_FIELD_NAME_CONTENT_LENGTH, CONTENT_LENGTH, false);
@@ -232,6 +235,7 @@ int doHttpPost(volatile float *temp,volatile float *humid)
     }
     else {
         System_printf("sendField successful\n");
+        System_flush();
     }
 
         ret = HTTPCli_sendRequestBody(&cli, data, strlen(data));
@@ -240,9 +244,10 @@ int doHttpPost(volatile float *temp,volatile float *humid)
     }
     else {
         System_printf("Data sent successfully\n");
+        System_flush();
     }
-    //RECEIVE
 
+    //RECEIVE
     ret = HTTPCli_getResponseStatus(&cli);
     if (ret != HTTPStd_OK) {
         if(ret != 204){
@@ -271,12 +276,16 @@ int doHttpPost(volatile float *temp,volatile float *humid)
     System_printf("Received %d bytes of pay-load\n", len);
     System_flush();
 
-    //free(try);
-    //free(try2);
+
     HTTPCli_disconnect(&cli);
     HTTPCli_destruct(&cli);
     return 0;
 }
+/*
+ *  ======== doHttpGet ========
+ *  HTTP GET Request
+ *  GETs deviceID from Server based on MAC-Address
+ */
 int doHttpGet()
 {
     char* config = concat(CONFIG_URI,g_devicemac);
@@ -292,10 +301,10 @@ int doHttpGet()
         { HTTPStd_FIELD_NAME_USER_AGENT, USER_AGENT },
         { NULL, NULL }
     };
-
-    System_printf("Sending a HTTP GET request to '%s'\n", HOSTNAME);//POST
+    #ifdef DEBUG
+    System_printf("Sending a HTTP GET request to '%s'\n", HOSTNAME);
     System_flush();
-
+    #endif
     HTTPCli_construct(&cli);
 
     HTTPCli_setRequestFields(&cli, fields);
@@ -320,9 +329,9 @@ int doHttpGet()
     if (ret != HTTPStd_OK) {
         printError("httpTask: cannot get status", ret);
     }
-
+    #ifdef DEBUG
     System_printf("HTTP Response Status Code: %d\n", ret);
-
+    #endif
     ret = HTTPCli_getResponseField(&cli, data, sizeof(data), &moreFlag);
     if (ret != HTTPCli_FIELD_ID_END) {
         printError("httpTask: response field processing failed", ret);
@@ -334,8 +343,7 @@ int doHttpGet()
         if (ret < 0) {
             printError("httpTask: response body processing failed", ret);
         }
-        //DEBUG
-        /**/
+
         if(ret>0){
             deviceID = (int) (data[0]-'0');
             System_printf("Received DeviceID: %c\n", data[0]);
@@ -346,10 +354,10 @@ int doHttpGet()
 
         len += ret;
     } while (moreFlag);
-
+    #ifdef DEBUG
     System_printf("Received %d bytes of Payload\n", len);
     System_flush();
-
+    #endif
     free(config);
 
     HTTPCli_disconnect(&cli);
@@ -421,24 +429,29 @@ int main(void)
 
     return (0);
 }
-//Copied from: https://stackoverflow.com/questions/8465006/how-do-i-concatenate-two-strings-in-c
+/*
+ *  ======== concat ========
+ *  Combines two Strings
+ */
 char* concat(const char *s1, const char *s2)
 {
     char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
-    // in real code you would check for errors in malloc here
+    if(result==NULL)
+        {
+            printError("concat: memory not allocated\n", 0);
+        }
     strcpy(result, s1);
     strcat(result, s2);
     return result;
 }
 /*
  *  ======== getMacAddress ========
+ *  Gets, prints and stores the MAC Address of the device
  */
 void getMacAddress(void)
 {
     uint32_t ui32User0, ui32User1;
     uint8_t pui8MACAddr[6];
-
-
 
       //
       // Get the MAC address from the UART0 and UART1 registers in NV ram.
