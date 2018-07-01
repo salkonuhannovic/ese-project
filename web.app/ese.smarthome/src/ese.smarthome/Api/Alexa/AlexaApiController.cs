@@ -50,15 +50,22 @@ namespace ESE.SmartHome.Api.Alexa
         /// <remarks>
         /// Returns the most recent measurement for the given device
         /// </remarks>
-        /// <param name="deviceId"></param>
+        /// <param name="deviceName"></param>
         /// <returns>Measurement if successful</returns>
         /// <response code="204">No measurments for device with given id found.</response>
-        [HttpGet("measurements/{deviceId}")]
+        [HttpGet("measurements/{deviceName}")]
         [ProducesResponseType(typeof(MeasurementDto), 200)]
-        public async Task<IActionResult> GetMeasurmentsByDeviceId(long deviceId)
+        public async Task<IActionResult> GetMeasurmentsByDeviceId(string deviceName)
         {
-            var measurment = await _unitOfWork.Measurements.GetByDeviceId(deviceId);
+            var devices = await _unitOfWork.Devices.GetAllActiveDevices();
+            
+            var deviceFound = devices.FirstOrDefault(d => d.Name.ToLowerInvariant().Equals(deviceName.ToLowerInvariant()));
+            if (deviceFound == null)
+            {
+                return NoContent();
+            }
 
+            var measurment = await _unitOfWork.Measurements.GetByDeviceId(deviceFound.Id);
             if (measurment == null)
             {
                 return NoContent();

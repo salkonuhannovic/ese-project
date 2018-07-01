@@ -1,0 +1,159 @@
+﻿@using ESE.SmartHome.App.RealtimeChart
+@model ViewRealtimeChart.QueryResult
+
+@{
+    ViewBag.Title = "RealtimeChart";
+    Layout = "_Layout";
+}
+
+<section class="section">
+    <div class="container">
+
+        @if (Model.ActiveDevices.Any())
+        {
+            <div class="form-control">
+                <div class="input-group mb-5">
+                    <select id="select-device" class="form-control" required>
+                        <option selected value="">Please select ...</option>
+                        @foreach (var d in Model.ActiveDevices)
+                        {
+                            <option value="@(d.Id)">@($"{d.Id} - {d.Name}")</option>
+                        }
+                    </select>
+
+                    <div class="input-group-append">
+                        <button id="btn-select" type="button" class="btn btn-outline-secondary">
+                            <i class="fa fa-fw fa-check"></i> Anzeigen
+                        </button>
+                    </div>
+
+                </div>
+
+                <canvas id="chart" style="width: 800px; height: 450px"></canvas>
+            </div>
+        }
+        else
+        {
+            <hr />
+            <h2>Es wurden keien aktiven Devices gefunden ...</h2>
+            <hr />
+        }
+
+    </div>
+</section>
+
+
+@section Scripts
+    {
+    <script type="text/javascript">
+
+        $(function () {
+            $("#btn-select").on('click', function () {
+                var selected = $('#select-device').val();
+                console.log('sel length ' + selected.length);
+
+                if (selected.length === 0) {
+                    return;
+                }
+
+                $(this).chartUpdate();
+            });
+
+        });
+
+        $.fn.chartUpdate = function () {
+            var samples = 100;
+            var speed = 250;
+
+            var temperatureValues = [];
+            var humidityValues = [];
+            var labels = [];
+
+            temperatureValues.length = samples;
+            humidityValues.length = samples;
+            labels.length = samples;
+
+            temperatureValues.fill(0);
+            humidityValues.fill(0);
+            labels.fill(0);
+
+            var chart = new Chart(document.getElementById("chart"),
+                {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Temperature',
+                                data: temperatureValues,
+                                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                                borderColor: 'rgb(255, 99, 132)',
+                                borderWidth: 2,
+                                lineTension: 0.25,
+                                pointRadius: 0
+                            },
+                            {
+                                label: 'Humidity',
+                                data: humidityValues,
+                                backgroundColor: 'rgba(112, 99, 255, 0.1)',
+                                borderColor: 'rgb(112, 99, 255)',
+                                borderWidth: 2,
+                                lineTension: 0.25,
+                                pointRadius: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        animation: {
+                            duration: speed * 1.5,
+                            easing: 'linear'
+                        },
+                        scales: {
+                            xAxes: [
+                                {
+                                    display: false
+                                }
+                            ],
+                            yAxes: [
+                                {
+                                    ticks: {
+                                        max: 100,
+                                        min: -10
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                });
+
+            var connection = new signalR.HubConnection("sensor");
+            var sel = $('#select-device').val();
+
+            connection.on('Broadcast',
+                function (sender, message) {
+
+                    if (sel === null) {
+                        return;
+                    }
+
+                    if (parseInt(sel) === message.deviceid) {
+                        temperatureValues.push(message.temperature);
+                        temperatureValues.shift();
+
+                        humidityValues.push(message.humidity);
+                        humidityValues.shift();
+
+                        labels.push(message.timestamp);
+                        labels.shift();
+
+                        chart.update();
+                    }
+                });
+
+            connection.start();
+        };
+    </script>
+}
+
+

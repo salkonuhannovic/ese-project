@@ -46,7 +46,7 @@
                     <tr>
                         <th scope="row">@(d.Id)</th>
                         <td>@(d.Name)</td>
-                        <td>@(d.Setting.MacAddress.ToLowerInvariant())</td>
+                        <td>@(d.Setting.MacAddress?.ToLowerInvariant())</td>
                         <td>@(d.Created.ToShortDateString())</td>
                         <td>
                             @if (d.IsActive)

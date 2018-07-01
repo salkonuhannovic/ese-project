@@ -6,6 +6,7 @@ namespace ESE.SmartHome.Core.Measurements
 {
     public class Measurement : Entity
     {
+        [JsonProperty("deviceid")]
         public long DeviceId { get; set; }
 
         [JsonProperty("timestamp")]
@@ -20,7 +21,7 @@ namespace ESE.SmartHome.Core.Measurements
 
         public override string ToString()
         {
-            return $"Measurement (Timestamp = {Timestamp}, Temperature = {Temperature}, Humidity = {Humidity})";
+            return $"Measurement (DeviceId = {DeviceId}, Timestamp = {Timestamp}, Temperature = {Temperature}, Humidity = {Humidity})";
         }
     }
     

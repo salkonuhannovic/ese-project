@@ -39,7 +39,7 @@ namespace ESE.SmartHome.Api.Sensors
                 return NotFound();
             }
 
-            var id = deviceId.Select(d => d.Id);
+            var id = deviceId.Select(d => d.Id).FirstOrDefault();
 
             return Ok(id);
         }
