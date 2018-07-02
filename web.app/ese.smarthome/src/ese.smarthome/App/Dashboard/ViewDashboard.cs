@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using ESE.SmartHome.Core.Data;
 using ESE.SmartHome.Core.Devices;
+using ESE.SmartHome.Core.Measurements;
 using MediatR;
 
 namespace ESE.SmartHome.App.Dashboard
@@ -10,13 +10,11 @@ namespace ESE.SmartHome.App.Dashboard
     public class ViewDashboard
     {
         public class Query : IRequest<QueryResult>
-        {
-            public TimeSpan TimeSpan { get; set; }
-        }
+        { }
 
         public class QueryResult
         {
-            public Device Device { get; set; }
+            public IDictionary<Device, Measurement> Data { get; set; }
         }
 
         public class QueryHandler : AsyncRequestHandler<Query, QueryResult>
@@ -30,14 +28,23 @@ namespace ESE.SmartHome.App.Dashboard
 
             protected override async Task<QueryResult> HandleCore(Query request)
             {
-                var dbResult = _unitOfWork.Devices.GetByIdAsync(1).Result;
+                var dict = new Dictionary<Device, Measurement>();
 
+                var result = await _unitOfWork.Devices.GetAllActiveDevices();
+
+                foreach (var device in result)
+                {
+                    var m = await _unitOfWork.Measurements.GetByDeviceId(device.Id);
+
+                    dict.Add(device, m);
+                }
+                
                 var queryResult = new QueryResult
                 {
-                    Device = dbResult
+                    Data = dict
                 };
 
-                return await Task.FromResult(queryResult);
+                return queryResult;
             }
         }
     }

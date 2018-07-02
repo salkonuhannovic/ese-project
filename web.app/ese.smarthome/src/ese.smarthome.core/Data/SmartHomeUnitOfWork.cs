@@ -1,8 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using ESE.SmartHome.Core.Db;
 using ESE.SmartHome.Core.Devices;
 using ESE.SmartHome.Core.Measurements;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace ESE.SmartHome.Core.Data
 {
@@ -30,7 +33,7 @@ namespace ESE.SmartHome.Core.Data
             Devices = deviceRepository;
             Measurements = measurementRepository;
         }
-
+        
         public void Save()
         {
             _dbContext.SaveChanges();

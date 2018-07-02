@@ -22,23 +22,14 @@
 <section class="section">
     <div class="container">
 
-        @*<div class="row" style="text-align: center;">
-            <div class="col mb-5">
-                 heading 
-                <hr />
-                <h2>My Home is my castle</h2>
-                <hr />
-            </div>
-        </div>*@
-
         <div class="card-deck mb-3">
             <div class="col-md-4 d-flex">
                 <div class="card mb-md-5">
                     <img class="card-img-top img-fluid"
-                         src="/img/history-image.jpeg" alt="Historische daten image cap" />
+                         src="/img/history-image.jpeg" alt="Aktuellste daten image cap" />
                     <div class="card-body d-flex flex-column">
-                        <h4 class="card-title">Historie</h4>
-                        <p class="card-text">Historische Messdaten anzeigen</p>
+                        <h4 class="card-title"><i class="fa fa-book"> | Aktuell</i></h4>
+                        <p class="card-text">Aktuelle Messdaten anzeigen</p>
                         <a class="btn btn-primary mt-auto" href="@Url.Action("ViewDashboard", "Dashboard")">View</a>
                     </div>
                 </div>
@@ -63,7 +54,7 @@
                     <img class="card-img-top img-fluid"
                          src="/img/setup-image.jpg" alt="Devices image cap" />
                     <div class="card-body d-flex flex-column">
-                        <h4 class="card-title">Sensoren</h4>
+                        <h4 class="card-title"><i class="fa fa-cogs"> | Sensoren</i></h4>
                         <p class="card-text">Sensoren anzeigen, anlegen oder einstellen</p>
                         <a class="btn btn-primary mt-auto" href="@Url.Action("ViewDevices", "Setup")">View</a>
                     </div>

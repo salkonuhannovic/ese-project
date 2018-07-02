@@ -18,13 +18,9 @@ namespace ESE.SmartHome.App.Dashboard
         [HttpGet("")]
         public async Task<IActionResult> ViewDashboard()
         {
-            var ts = new TimeSpan(7, 0, 0);
-
-            var query = new ViewDashboard.Query { TimeSpan = ts };
-
-            var result = await _mediator.Send(query);
-
-            return View("ViewDashboard", result);
+            var model = await _mediator.Send(new ViewDashboard.Query());
+         
+            return View("ViewDashboard", model);
         }
     }
 }

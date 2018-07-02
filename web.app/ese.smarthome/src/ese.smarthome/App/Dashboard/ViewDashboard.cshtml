@@ -1,5 +1,5 @@
-﻿@model ESE.SmartHome.App.Dashboard.ViewDashboard.QueryResult
-@inject IJsonHelper MyJson;
+﻿@using ESE.SmartHome.App.Dashboard
+@model ViewDashboard.QueryResult
 
 @{
     ViewBag.Title = "Dashboard";
@@ -8,65 +8,46 @@
 
 <section class="section">
     <div class="container">
-        <hr/>
-        <h2><i class="fa fa-thermometer"></i> | Historische Daten</h2>
+        <hr />
+        <h2 style="text-align: center;">Aktuelle Daten</h2>
         <hr />
 
-        <canvas id="myChart" width="60" height="30"></canvas>
+        @if (!Model.Data.Any())
+        {
+            <hr />
+            <h2>Es wurden keine aktiven Devices gefunden ...</h2>
+            <hr />
+        }
+        else
+        {
+            <div class="card-deck mb-3">
+                @foreach (var d in Model.Data)
+                {
+                    <div class="col-md-4 d-flex">
+                        <div class="card mb-md-5">
+                            <div class="card-header"><i class="fa fa-thermometer-three-quarters"></i> | @(d.Key.Name)</div>
+                            <div class="card-body d-flex flex-column">
+                                <h4 class="card-title"></h4>
+
+                                @if (d.Value == null)
+                                {
+                                    <p class="card-text">F&uuml;r dieses Device gibt es bisher keine Messwerte ...</p>
+                                }
+                                else
+                                {
+                                    <p class="card-text">@(d.Value.Timestamp)</p>
+                                    <p class="card-text">Temperatur: @(d.Value.Temperature)°</p>
+                                    <p class="card-text">Luftfeuchtigkeit @(d.Value.Humidity)%</p>
+                                }
+
+
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            </div>
+        }
 
     </div>
 </section>
-
-
-@section Scripts
-    {
-    <script>
-
-        var model = null;
-
-        @if (Model.Device != null)
-        {
-            var model = Html.Raw(MyJson.Serialize(Model.Device.Measurements));
-        }
-
-
-            var xPoints = [];
-            var yPoints = [];
-
-            $.each(model,
-                function(index, item) {
-                    xPoints.push(new Date(item.receptionDateTime));
-                    yPoints.push(new Date(item.temperature));
-                });
-
-            var config = {
-                type: 'line',
-                data: {
-                    labels: xPoints,
-                    datasets: [
-                        {
-                            label: "Temperature",
-                            data: yPoints
-                        }
-                    ]
-                },
-                options: {
-                    scales: {
-                        xAxes: [
-                            {
-                                type: 'time',
-                                time: {
-                                    displayFormats: {
-                                        'hour': 'HH:mm'
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            };
-
-            var ctx = document.getElementById("myChart").getContext("2d");
-            new Chart(ctx, config);
-    </script>
-}
