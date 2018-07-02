@@ -52,11 +52,11 @@ These instructions will get you a copy of the project up and running on your loc
 
 * When installing Visual Studio select the **ASP.NET and web development** workload
 
-![](docs/vs_install_webdev.png)
+![](web.app/ese.smarthome/docs/vs_install_webdev.png)
 
 * If you have not already installed MsSQL-LocalDB, please select the **Data storage and processing** workload as well
 
-![](docs/vs_install_datastorage.png)
+![](web.app/ese.smarthome/docs/vs_install_datastorage.png)
 
 * Finally you need the current [.Net Core SDK](https://www.microsoft.com/net/download/dotnet-core/)
 
@@ -81,11 +81,11 @@ Update-Database -Project ese.smarthome.core -StartupProject ese.smarthome
 This command creates the database and all required tables.
 
 >### Note
->You can find other useful commands in the [migrations.md](docs/migrations.md) document.
+>You can find other useful commands in the [migrations.md](web.app/ese.smarthome/docs/) document.
 
 ### Configuration
 
-You can find the configuration settings in the [`appsettings.json`](ese.smarthome/appsettings.json) file.
+You can find the configuration settings in the [`appsettings.json`](web.app/ese.smarthome/appsettings.json) file.
 
 * `ConnectionStrings` - Used for the Db-Connection
 * [`Serilog`](https://serilog.net/) - Settings for Logging
@@ -136,10 +136,6 @@ As a result, key components of productive systems such as privacy and data secur
 * [Popper.js](https://popper.js.org/)
 * [Bootstrap Toggle](http://www.bootstraptoggle.com/)
 
-## Version Control System
-
-We used [git](https://git-scm.com/) as version control system and [GitLab](https://gitlab.com/) as the repository.
-
 ## Architecture & Patterns
 
 * MVC
@@ -148,7 +144,7 @@ We used [git](https://git-scm.com/) as version control system and [GitLab](https
 * Repository
 * Unit of Work
 
-## Authors
+## Web App - Authors
 
 * **Nöhrer Stephan**
 
