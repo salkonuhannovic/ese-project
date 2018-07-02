@@ -9,6 +9,7 @@ using JetBrains.Annotations;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -89,6 +90,14 @@ namespace ESE.SmartHome
             }
 
             app.UseStaticFiles();
+
+            app.UseStatusCodePages(async context =>
+            {
+                context.HttpContext.Response.ContentType = "text/plain";
+                await context.HttpContext.Response.WriteAsync(
+                    "Status code page, status code: " + 
+                    context.HttpContext.Response.StatusCode);
+            });
 
             dbContext.Database.Migrate();
 

@@ -1,0 +1,20 @@
+﻿@model ESE.SmartHome.App.Errors.Error
+
+@{
+    ViewBag.Title = "Error";
+    Layout = "_Layout";
+}
+
+<h1>Something went wrong ...</h1>
+
+<div class="alert alert-danger">
+    @if (Model == null)
+    {
+        <p>An unexpected error occured.</p>
+    }
+    else
+    {
+        <p>@Model.ErrorMessage</p>
+    }
+    <p>Please contact our <a href="mailto:ese.smarthome@holymoly.com">Tech Support</a>.</p>
+</div>

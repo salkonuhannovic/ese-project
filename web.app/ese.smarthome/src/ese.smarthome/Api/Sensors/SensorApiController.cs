@@ -59,7 +59,7 @@ namespace ESE.SmartHome.Api.Sensors
                 DeviceId = dto.DeviceId,
                 Temperature = dto.Temperature,
                 Humidity = dto.Humidity,
-                Timestamp = DateTime.Today
+                Timestamp = DateTime.Now
             };
 
             var m = await _unitOfWork.Measurements.GetByDeviceId(dto.DeviceId);
@@ -72,7 +72,7 @@ namespace ESE.SmartHome.Api.Sensors
             {
                 m.Temperature = dto.Temperature;
                 m.Humidity = dto.Humidity;
-                m.Timestamp = DateTime.Today;
+                m.Timestamp = DateTime.Now;
 
                 await _unitOfWork.Measurements.UpdateAsync(m);
             }
