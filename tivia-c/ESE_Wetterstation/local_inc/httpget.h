@@ -38,7 +38,7 @@
 #define CONTENT_TYPE      "application/json"
 #define HTTPTASKSTACKSIZE 4096
 
-#define POLLINTVALL 20 //Polling Interval in Seconds
+#define POLLINTVALL 10 //Polling Interval in Seconds
 
 #define DEBUG
 
