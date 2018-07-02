@@ -9,10 +9,12 @@ namespace ESE.SmartHome.Core.Db.EntityConfigurations
         public void Configure(EntityTypeBuilder<Device> builder)
         {
             builder.HasOne(s => s.Setting)
-                   .WithOne();
+                   .WithOne()
+                   .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(d => d.Measurements)
-                   .WithOne();
+                   .WithOne()
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

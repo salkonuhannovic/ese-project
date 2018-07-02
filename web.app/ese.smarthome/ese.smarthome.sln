@@ -11,9 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ese.smarthome.core", "src\e
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ese.smarthome.sensormock", "src\ese.smarthome.sensormock\ese.smarthome.sensormock.csproj", "{13FEA6A9-CA5F-4DD8-93CF-A585561DFA54}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{BA253A7E-3564-41E3-B263-76A144E3A528}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{F269D8A7-95CD-4C7E-9531-48FD06B65AB0}"
 	ProjectSection(SolutionItems) = preProject
-		doc\migrations.md = doc\migrations.md
+		docs\migrations.md = docs\migrations.md
+		docs\vs_install_datastorage.png = docs\vs_install_datastorage.png
+		docs\vs_install_webdev.png = docs\vs_install_webdev.png
 	EndProjectSection
 EndProject
 Global

@@ -34,22 +34,14 @@ namespace ESE.SmartHome.App.Setup
 
             protected override async Task<long> HandleCore(Command command)
             {
-                //todo test this
-                //NetworkInterface[] arr = NetworkInterface.GetAllNetworkInterfaces();
-
-                //foreach (NetworkInterface item in arr)
-                //{
-                //    PhysicalAddress mac = item.GetPhysicalAddress();
-                //    string stringFormatMac = string.Join(":", mac.GetAddressBytes().Select(varByte => varByte.ToString("X2")));
-                //}
-
                 var newDevice = new Device
                 {
                     Name = command.Name,
                     Created = DateTime.UtcNow,
                     Setting = new DeviceSetting
                     {
-                        MacAddress = command.MacAddress
+                        MacAddress = command.MacAddress,
+                        LastModified = DateTime.Now
                     }
                 };
 
