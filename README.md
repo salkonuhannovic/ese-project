@@ -16,30 +16,10 @@ The smarthome assistent consists of three packages(folders within this project):
 - tivia-c: code of the µC
 - frontend&backend: code of frontend and backend
 
-
-### Tech
-Der-Wetterstation uses a number of open source projects to work properly:
-
-* [Jsmen] - awesome JSON parser for C
-* [Twitter Bootstrap] - great UI boilerplate for modern web apps
-* [node.js] - for Amazon Lambda function
-* [Gulp] - the streaming build system
-* [jQuery] - duh
-
-And of course The-Wetterstation itself is open source on GitHub.
-
 ### Todos
 
  - add security concept
  - add proper exception handling
-
-   [Jsmen]: <https://github.com/zserge/jsmn>
-   [node.js]: <http://nodejs.org>
-   [Twitter Bootstrap]: <http://twitter.github.com/bootstrap/>
-   [jQuery]: <http://jquery.com>
-   [AngularJS]: <http://angularjs.org>
-   [Gulp]: <http://gulpjs.com>
-
 
    # Alexa Skill - ESE SmartHome
 
@@ -81,7 +61,7 @@ And of course The-Wetterstation itself is open source on GitHub.
 
   Deploy:
   ```console
-  mac:Desktop salko.n$ ask deploy
+ mac:Desktop salko.n$ ask deploy
   ```
 
   Now you test your Skill via the cli:
