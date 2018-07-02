@@ -1,10 +1,6 @@
 ﻿@using ESE.SmartHome.App.Setup
 @model EditDevice.Command
 
-@*<link href="~/css/vendor/bootstrap-toggle.min.css" rel="stylesheet" />
-<script src="~/js/vendor/bootstrap-toggle.min.js"></script>*@
-
-
 <div class="modal-header">
     <h5 class="modal-title">Eigenschaften bearbeiten</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -27,7 +23,7 @@
         </div>
         <div class="form-group">
             <label class="sr-only">Is active</label>
-            <input type="checkbox" asp-for="IsActive" id="toggle-isactive" data-toggle="toggle">
+            <input type="checkbox" asp-for="IsActive" class="form-control" id="toggle-isactive" data-toggle="toggle">
 
         </div>
     </form>
@@ -36,15 +32,3 @@
     <button type="submit" form="form-edit-device" class="btn btn-primary"><i class="fa fa-check"></i> Speichern</button>
     <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fa fa-times"></i> Abbrechen</button>
 </div>
-
-
-
-@*@section Scripts
-{
-    <script>
-        $(function() {
-            $('#toggle-one').bootstrapToggle('destroy');
-            $('#toggle-one').bootstrapToggle();
-        })
-    </script>
-}*@

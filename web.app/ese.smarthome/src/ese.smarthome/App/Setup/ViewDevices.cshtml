@@ -14,8 +14,11 @@
 
         @if (TempData.ContainsKey("TempMessage"))
         {
-            <div class="alert alert-info fade show">
+            <div class="alert alert-success alert-dismissible fade show">
                 <i class="fa fa-check"></i> @TempData["TempMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
         }
 
@@ -116,13 +119,15 @@
                             $("[data-toggle='toggle']").bootstrapToggle('destroy');
                             $("[data-toggle='toggle']").bootstrapToggle();
 
+                            $(".toggle").attr('style', 'width: 116px; height: 50px;');
+
                             var form = modal.find('form');
                             form.removeData('validator');
                             form.removeData('unobtrusiveValidation');
                             $.validator.unobtrusive.parse(form);
                         })
                         .fail(function() {
-                            @*window.location = '@Url.Action("Error", "Errors")';*@
+                            window.location = '@Url.Action("Error", "Errors")';
                         });
                 });
 
