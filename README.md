@@ -81,11 +81,11 @@ Update-Database -Project ese.smarthome.core -StartupProject ese.smarthome
 This command creates the database and all required tables.
 
 >### Note
->You can find other useful commands in the [migrations.md](web.app/ese.smarthome/docs/) document.
+>You can find other useful commands in the [migrations.md](web.app/ese.smarthome/docs/migrations.md) document.
 
 ### Configuration
 
-You can find the configuration settings in the [`appsettings.json`](web.app/ese.smarthome/appsettings.json) file.
+You can find the configuration settings in the [`appsettings.json`](web.app/ese.smarthome/src/ese.smarthome/appsettings.json) file.
 
 * `ConnectionStrings` - Used for the Db-Connection
 * [`Serilog`](https://serilog.net/) - Settings for Logging
