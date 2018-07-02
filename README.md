@@ -16,11 +16,15 @@ The smarthome assistent consists of three packages(folders within this project):
 - tivia-c: code of the µC
 - frontend&backend: code of frontend and backend
 
-### Todos
+# Todos
 
  - add security concept
  - add proper exception handling
 
+
+
+
+ 
    # Alexa Skill - ESE SmartHome
 
    ## Getting Started
