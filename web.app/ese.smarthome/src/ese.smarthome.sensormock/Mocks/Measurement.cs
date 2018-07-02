@@ -5,6 +5,7 @@ namespace ESE.SmartHome.SensorMock.Mocks
 {
     public class Measurement
     {
+        [JsonProperty("deviceid")]
         public long DeviceId { get; set; }
 
         [JsonProperty("timestamp")]
@@ -19,7 +20,7 @@ namespace ESE.SmartHome.SensorMock.Mocks
 
         public override string ToString()
         {
-            return $"Measurement (Timestamp = {Timestamp}, Temperature = {Temperature}, Humidity = {Humidity})";
+            return $"Measurement (DeviceId = {DeviceId}, Timestamp = {Timestamp}, Temperature = {Temperature}, Humidity = {Humidity})";
         }
     }
 
