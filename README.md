@@ -67,7 +67,7 @@ The smarthome assistent consists of three packages(folders within this project):
   Now you test your Skill via the cli:
 
 ```console
- mac:Desktop salko.n$  ask simulate -t "alexa frage bestes projekt nach küche" -l "de-DE"
+mac:Desktop salko.n$  ask simulate -t "alexa frage bestes projekt nach küche" -l "de-DE"
 ✓ Simulation created for simulation id: 9cc3297d-256c-4304-af5a-0bb1af87734e
 ◝ Waiting for simulation response{
 
