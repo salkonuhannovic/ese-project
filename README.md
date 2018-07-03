@@ -284,7 +284,7 @@ As a result, key components of productive systems have been ignored.
 
 ## Tools
 
-* [WEbhook](https://webhook.site) - Simple tool to test HTTP Requests
+* [Webhook](https://webhook.site) - Simple tool to test HTTP Requests
 * [Apitester](https://apitester.com) - Tool to create and send HTTP Requests
 
 ## Embedded Sensor Software - Authors
