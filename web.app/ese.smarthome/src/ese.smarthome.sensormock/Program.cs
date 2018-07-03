@@ -30,18 +30,17 @@ namespace ese.smarthome.sensormock
 
             // Initialize a new Random Number Generator:
             var rnd = new Random();
-
-            double tVal = 0.0d;
-            double hVal = 0.0d;
-
+            
             while (!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(1000, cancellationToken);
+                double tVal = 0.0d;
+                double hVal = 0.0d;
+
+                await Task.Delay(1500, cancellationToken);
 
                 // Generate the value to Broadcast to Clients:
-                tVal = Math.Min(Math.Max(tVal + (0.1 - rnd.NextDouble() * 10), -1), 1);
-                
-                hVal = Math.Min(Math.Max(hVal + (0.1 - rnd.NextDouble() * 13), -1), 1);
+                tVal += (20 - rnd.NextDouble() * 1.5);
+                hVal += (40 - rnd.NextDouble() * 1.7);
 
                 // Create the Measurement with a Timestamp assigned:
                 var measurement = new Measurement
@@ -49,10 +48,12 @@ namespace ese.smarthome.sensormock
                     Timestamp = DateTime.UtcNow,
                     Temperature = tVal,
                     Humidity = hVal,
-                    DeviceId = 1
+                    DeviceId = 2
                 };
+
+                Console.WriteLine($"Sending request with Temperature [{measurement.Temperature}] and Humidity [{measurement.Humidity}]");
                 
-                // Finally send the value:
+                // Finally send the values:
                 await hubConnection.InvokeAsync("Broadcast", "Sensor", measurement, cancellationToken);
             }
 
