@@ -6,6 +6,7 @@
  *
  *
  * @author Hannes Aurednik <ic15b004@technikum-wien.at>
+ * @author Eva Gergely <ic16b064@technikum-wien.at>
  * @date 2018/07/01
  *
  * @version 1.1

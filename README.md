@@ -232,3 +232,62 @@ As a result, key components of productive systems such as privacy and data secur
 * [Pexels](https://www.pexels.com/) - Free images licensed under Creative Commons Zero
 * [stackoverflow](https://stackoverflow.com/) - Lifesaver
 * [coffee](https://en.wikipedia.org/wiki/Coffee) - THE drink
+
+# Embedded Sensor Software - ESE SmartHome
+
+## Getting Started
+
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+
+### Prerequisites
+
+* Install [Code Composer Studio](http://www.ti.com/tool/CCSTUDIO#) which is available for free
+
+* Finally you need the current [TI-RTOS](http://software-dl.ti.com/dsps/dsps_public_sw/sdo_sb/targetcontent/tirtos/index.html)
+
+### Installing
+
+After obtaining ESE SmartHome by cloning from the repository or extracting the compressed file, the solution can be imported into Code Composer Studio
+
+In order to successfully start the project you have to build it first.
+Keep in mind that this project is designed for EK-TM4C1294XL boards and HTU-21 modules.
+If you want to use it with other hardware you have to adopt it first.
+
+
+### Configuration
+
+You can find the configuration settings directly in the httpget.h and HTUTask.h files.
+
+* `#define DEBUG` - Used for activating more detailed Outputs
+* `#define POLLINTVALL 10` - Defines the Poll-interval for the sensors and the push interval for the http-task
+
+
+## Disclaimer
+
+* **NOT** intended to be a definitive solution
+* Beware to use in production way
+
+ESE SmartHome was developed as part of the Embedded Systems Engineering course of the Bachelor's degree in Information and Communication Systems and Services at the University of Applied Sciences [FH Technikum](https://www.technikum-wien.at/) in Vienna.
+
+The main goals of the project are
+* implement a simple embedded systems project
+* use – and if necessary – adapt complex software libraries
+* combine subsystems to complex (distributed) systems considering communication requirements
+* select, define, integrate, and adapt COTS (commercial off-the-shelf) and non-COTS components for embedded systems
+
+As a result, key components of productive systems have been ignored.
+
+## Built With
+
+* [Code Composer Studio](http://www.ti.com/tool/CCSTUDIO#)
+* Written in C
+
+## Tools
+
+* [WEbhook](https://webhook.site) - Simple tool to test HTTP Requests
+* [Apitester](https://apitester.com) - Tool to create and send HTTP Requests
+
+## Embedded Sensor Software - Authors
+
+* **Aurednik Hannes**
+* **Gergely Eva**
